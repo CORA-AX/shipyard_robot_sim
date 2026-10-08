@@ -13,7 +13,7 @@ from unittest.mock import patch
 SCRIPTS = Path(__file__).resolve().parents[1] / 'scripts'
 sys.path.insert(0, str(SCRIPTS))
 from visualization.runtime import FramePacer
-from visualization.webrtc import check_port_available, run_process
+from visualization.launcher import check_port_available, run_process
 
 
 class VisualizationChecks(unittest.TestCase):
@@ -51,7 +51,7 @@ class VisualizationChecks(unittest.TestCase):
         )
         launcher_code = (
             'from pathlib import Path; import os, sys; '
-            'from visualization.webrtc import run_process; '
+            'from visualization.launcher import run_process; '
             f'raise SystemExit(run_process([sys.executable, "-u", "-c", {child_code!r}], '
             'cwd=Path.cwd(), environment=os.environ.copy(), shutdown_timeout=0.2))'
         )

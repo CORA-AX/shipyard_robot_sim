@@ -15,7 +15,7 @@ from isaaclab.sensors import ContactSensorCfg
 from isaaclab.terrains import TerrainImporterCfg
 from isaaclab.utils import configclass
 
-from ..config.robot_cfg import GO2_CFG
+from assets.go2.config.robot_cfg import GO2_CFG
 
 
 @configclass

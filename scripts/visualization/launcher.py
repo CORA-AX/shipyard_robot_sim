@@ -1,4 +1,6 @@
-"""WebRTC settings and managed simulator processes. No robot or policy dependencies."""
+"""Local/WebRTC launch, app bootstrap and managed simulator shutdown."""
+import argparse
+import runpy
 from dataclasses import dataclass
 import os
 from pathlib import Path
@@ -7,9 +9,13 @@ import socket
 import subprocess
 import sys
 
-from .runtime import prepare_environment
+if __package__:
+    from .runtime import prepare_environment
+else:
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+    from visualization.runtime import prepare_environment
 
-STREAM_ENTRY = Path(__file__).with_name('stream_entry.py')
+STREAM_ENTRY = Path(__file__).resolve()
 SIGNALING_PORT = 49100
 VIDEO_PORT = 47998
 ASSET_ROOT = 'https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/5.0'
@@ -98,5 +104,64 @@ def run_process(command, *, cwd: Path, environment, shutdown_timeout=10):
 def run_webrtc(script_arguments, *, root: Path, robot: str, config: WebRTCConfig):
     environment = prepare_environment(root, robot, os.environ.copy())
     environment['PUBLIC_IP'] = config.server_ip
-    command = [sys.executable, str(STREAM_ENTRY), *script_arguments]
+    command = [sys.executable, str(STREAM_ENTRY), "--entry", *script_arguments]
     return run_process(command, cwd=root, environment=environment)
+
+
+def add_display_arguments(parser, *, default=False):
+    parser.add_argument('--webrtc', action=argparse.BooleanOptionalAction, default=default,
+                        help='Use headless WebRTC; --no-webrtc opens a local window.')
+    parser.add_argument('--server-ip', default=os.environ.get('PUBLIC_IP'),
+                        help='WebRTC server address reachable by the client (or PUBLIC_IP).')
+
+
+def launch_display(command, *, root, robot, webrtc, server_ip):
+    if webrtc:
+        config = WebRTCConfig(server_ip)
+        check_port_available()
+        print(config.connection_hint(), flush=True)
+        command = [*command, *config.app_arguments(), '--headless', '--kit_args', config.kit_arguments()]
+        return run_webrtc(command, root=root, robot=robot, config=config)
+    environment = prepare_environment(root, robot, os.environ.copy())
+    environment.update(HEADLESS='0', LIVESTREAM='0')
+    if not environment.get('DISPLAY') and Path('/tmp/.X11-unix/X0').exists():
+        environment['DISPLAY'] = ':0'
+        authority = Path.home() / '.Xauthority'
+        if authority.is_file():
+            environment.setdefault('XAUTHORITY', str(authority))
+    print('Opening a local Isaac Sim window on the server desktop.', flush=True)
+    return run_process([sys.executable, str(STREAM_ENTRY), "--entry", *command, '--livestream', '0'],
+                       cwd=root, environment=environment)
+
+
+def configure_streaming_app():
+    from isaacsim import SimulationApp
+
+    # CLI settings are reset by SimulationApp.reset_render_settings().
+    # Avoid creating another empty stage before the display is ready.
+    SimulationApp.DEFAULT_LAUNCHER_CONFIG.update(sync_loads=False, hide_ui=False, create_new_stage=False)
+    from isaaclab.app import AppLauncher
+
+    original_init = AppLauncher.__init__
+
+    def launch(app_launcher, *args, **kwargs):
+        original_init(app_launcher, *args, **kwargs)
+        import carb
+
+        carb.settings.get_settings().set_bool('/omni.kit.plugin/syncUsdLoads', True)
+
+    AppLauncher.__init__ = launch
+
+
+def main():
+    if len(sys.argv) < 3 or sys.argv[1] != '--entry':
+        raise SystemExit('Use scripts/viewer.py.')
+    script = Path(sys.argv[2]).resolve()
+    sys.argv = [str(script), *sys.argv[3:]]
+    sys.path.insert(0, str(script.parent))
+    configure_streaming_app()
+    runpy.run_path(str(script), run_name='__main__')
+
+
+if __name__ == '__main__':
+    main()

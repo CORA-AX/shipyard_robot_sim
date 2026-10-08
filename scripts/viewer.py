@@ -1,39 +1,91 @@
 #!/usr/bin/env python3
-"""Simulation worker for view_scenario.py; loads no robots or policies."""
+"""View a scene or spawn Go2 for an external controller, locally or via WebRTC."""
 import argparse
 import json
 from pathlib import Path
 import sys
 
-ROOT = Path(__file__).resolve().parents[2]
+ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / 'scripts'))
-from visualization.runtime import FramePacer, kit_arguments, prepare_environment
-from visualization.display import dispatch_display
 from scenarios.registry import SCENARIOS, load_scene
+from visualization.runtime import FramePacer, kit_arguments, prepare_environment
+from visualization.launcher import add_display_arguments, launch_display
+
+
+def add_robot_arguments(parser):
+    parser.add_argument('--robot', choices=('none', 'go2'), default='none')
+    parser.add_argument('--robot-id', default='go2')
+    parser.add_argument('--control-port', type=int, default=8765)
+    parser.add_argument('--control-timeout', type=float, default=2.0,
+                        help='Seconds without a valid action before detaching the controller.')
+
+
+def validate_robot_arguments(parser, args):
+    if (not 1 <= args.control_port <= 65535 or args.control_timeout <= 0
+            or not args.robot_id or len(args.robot_id) > 64):
+        parser.error('Use a valid port, positive control timeout and robot ID of 1 to 64 characters.')
 
 
 def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--scenario', choices=SCENARIOS, default='shipyard')
+    parser.add_argument('--device', default='cuda:0')
+    parser.add_argument('--steps', type=int, default=0, help='Scene frames or applied robot control steps; 0 runs until stopped.')
+    parser.add_argument('--report', type=Path)
+    add_robot_arguments(parser)
+    add_display_arguments(parser)
+    args = parser.parse_args()
+    if Path(sys.prefix).resolve() != (ROOT / '.conda/isaacsim-5.0').resolve():
+        parser.error(f'Activate {ROOT / ".conda/isaacsim-5.0"} first.')
+    if args.steps < 0:
+        parser.error('--steps must be nonnegative.')
+    validate_robot_arguments(parser, args)
+    command = [str(Path(__file__).resolve()), '--worker',
+               '--scenario', args.scenario, '--device', args.device, '--steps', str(args.steps),
+               '--robot', args.robot, '--robot-id', args.robot_id,
+               '--control-port', str(args.control_port), '--control-timeout', str(args.control_timeout)]
+    if args.report:
+        command += ['--report', str(args.report.resolve())]
+    try:
+        status = launch_display(command, root=ROOT, robot='scenario_viewer',
+                                webrtc=args.webrtc, server_ip=args.server_ip)
+    except ValueError as exc:
+        parser.error(str(exc))
+    raise SystemExit(status)
+
+
+
+
+def run_viewer():
     if Path(sys.prefix).resolve() != (ROOT / '.conda/isaacsim-5.0').resolve():
         raise SystemExit('Activate the project .conda/isaacsim-5.0 environment first.')
-    dispatch_display(Path(__file__), root=ROOT, robot='scenario_viewer')
     prepare_environment(ROOT, 'scenario_viewer')
     from isaaclab.app import AppLauncher
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--scenario', choices=SCENARIOS, default='shipyard')
     parser.add_argument('--steps', type=int, default=0)
     parser.add_argument('--report', type=Path)
+    add_robot_arguments(parser)
     AppLauncher.add_app_launcher_args(parser)
     args = parser.parse_args()
     if args.steps < 0:
         parser.error('--steps must be nonnegative.')
+    validate_robot_arguments(parser, args)
     args.kit_args += ' ' + kit_arguments(ROOT, 'scenario_viewer')
     device = args.device
     headless = bool(args.headless or args.livestream > 0)
     app = AppLauncher(args).app
+    args.device = device
     report = {'passed': False, 'scenario': args.scenario, 'frames': 0,
               'headless': headless}
     try:
+        if args.robot == 'go2':
+            from control.go2.simulation import run_controlled
+            run_controlled(app, args, report)
+            if not report['passed']:
+                raise RuntimeError('Viewer closed before the requested control steps completed.')
+            return
         import isaaclab.sim as sim
         import omni.usd
         import omni.timeline
@@ -94,4 +146,8 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    if '--worker' in sys.argv:
+        sys.argv.remove('--worker')
+        run_viewer()
+    else:
+        main()

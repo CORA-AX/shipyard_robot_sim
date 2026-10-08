@@ -1,9 +1,124 @@
 # Shipyard robot simulation
 
-조선소 이기종 로봇 시뮬레이션을 위한 source asset 준비 프로젝트.
-HUNTER 2.0 URDF 교정·정적 검증을 완료했고, Isaac Sim 5.0 / Python 3.11 환경을 사용한다.
-Isaac Sim과 Go2는 `.conda/isaacsim-5.0` 환경 하나를 사용한다. Go2는 `assets/go2`의 자체 시나리오에서 공식 평지 정책을 실행하며 Isaac Lab v2.2.1을 라이브러리로 사용한다.
-[Go2 설치·실행 안내](docs/go2_setup.md)에 의존성 및 테스트 범위가 있다.
+전체 명령 옵션·기본값·실행 예시는 [커맨드 옵션 안내](command_options.md)를 참고한다.
+
+Isaac Sim 5.0 + Isaac Lab v2.2.1 기반 조선소 로봇 시뮬레이션 프로젝트다.
+현재 Go2 한 대의 환경 표시·정책 제어를 지원한다. Hunter2는 자산 준비·정적 검증 단계이며
+여러 로봇의 동시 실행은 아직 구현하지 않았다.
+
+**viewer가 환경·로봇·물리를 관리하고, 별도 control 프로세스가 정책을 실행한다.**
+명령은 모두 프로젝트 루트에서 실행한다. 공통 Conda 환경은 `.conda/isaacsim-5.0`이다.
+Isaac Lab은 `third_party/IsaacLab`을 사용한다.
+
+## 기존 서버에서 바로 실행
+
+사용할 터미널마다 환경을 활성화한다. 다른 컴퓨터에서는 프로젝트·Conda 경로를 바꾼다.
+
+```bash
+cd /home/rodix-gpu/shipyard_robot_sim
+source /home/rodix-gpu/miniforge3/etc/profile.d/conda.sh
+conda activate "$PWD/.conda/isaacsim-5.0"
+```
+
+정책 실행 전 체크포인트를 준비한다. 이미 있으면 체크섬만 확인한다.
+
+```bash
+python scripts/go2/prepare_go2_policy.py
+```
+
+## 환경과 로봇 표시
+
+| 목적 | viewer 옵션 |
+|---|---|
+| 조선소 환경만 표시 | `--scenario shipyard` |
+| 평지 환경만 표시 | `--scenario flat` |
+| 환경에 Go2 추가 | `--robot go2` |
+| 서버 로컬 화면 | `--no-webrtc` (기본값) |
+| 원격 WebRTC 화면 | `--webrtc --server-ip 서버_IP` |
+
+```bash
+# 환경만 표시
+python scripts/viewer.py --scenario shipyard --no-webrtc
+
+# 환경 + Go2 표시: 로컬 창
+python scripts/viewer.py --scenario shipyard --robot go2 --no-webrtc
+
+# 환경 + Go2 표시: WebRTC + headless
+python scripts/viewer.py --scenario shipyard --robot go2 \
+  --webrtc --server-ip 192.168.1.149
+```
+
+위 viewer 명령 중 하나를 실행한다. `192.168.1.149`는 실제 서버 IP로 바꾼다.
+WebRTC 클라이언트에서 같은 IP로 연결하며 TCP 49100·UDP 47998을 사용한다.
+`PUBLIC_IP`를 설정했다면 `--server-ip`를 생략할 수 있다.
+로컬 화면은 서버 데스크톱의 DISPLAY와 X11 접근 권한이 필요하다.
+
+환경만 보는 viewer는 정적 배치를 표시한다. Go2 viewer도 제어기 연결 전에는 물리를 멈추고 기다린다.
+환경 전용 준비 로그는 `SCENARIO_VIEW_READY`, Go2 준비 로그는 `ROBOT_VIEW_READY`다.
+
+## Go2 정책 제어
+
+Go2 viewer를 실행한 상태에서 **같은 서버의 두 번째 터미널**에 공통 Conda 환경을 활성화한다.
+
+```bash
+python scripts/go2/control.py --vx 0.4
+```
+
+제어기는 기본 CPU에서 정책을 추론하고 `127.0.0.1:8765`로 viewer에 연결한다.
+정책 추론 장치는 `--device cuda:0`으로 변경할 수 있다. 정책은 장애물 회피를 수행하지 않는다.
+현재 사전 학습 정책은 낮은 보행 자세(몸체 기준 높이 약 0.16m)를 보인다. 정상 자세의 보행은 아직 검증되지 않았다.
+[몸체 높이 비교 검사](docs/go2_setup.md#몸체-높이-검사)를 참고한다.
+제어기에서 Ctrl+C를 누르면 물리를 멈추고 viewer 화면은 유지한다.
+같은 명령을 다시 실행하면 현재 상태에서 재개한다. 전체 종료는 viewer도 종료한다.
+한 Go2에 제어기 하나만 연결할 수 있으며, WebRTC viewer도 한 번에 하나씩 실행한다.
+
+## 제어 테스트와 결과 저장
+
+```bash
+# 터미널 1: 총 500개 액션 적용 후 종료
+python scripts/viewer.py --scenario shipyard --robot go2 --no-webrtc \
+  --steps 500 --report .runtime/go2/viewer_control.json
+
+# 터미널 2: 500스텝 정책 실행 및 적용 확인
+python scripts/go2/control.py --vx 0.4 --steps 500 --report .runtime/go2/control.json
+```
+
+WebRTC 테스트는 터미널 1의 `--no-webrtc`를 `--webrtc --server-ip 서버_IP`로 바꾼다.
+평지 테스트는 `--scenario flat`을 사용한다.
+viewer를 무제한 실행하고 제어기에만 `--steps 500`을 주면 500스텝 후 물리를 멈추고 재연결을 기다린다.
+
+| 옵션·결과 | 의미 |
+|---|---|
+| viewer `--steps` | 로봇 없으면 렌더 프레임 수, Go2 있으면 적용한 제어 스텝 수 |
+| control `--steps` | 이번 연결에서 적용이 확인된 액션 수 |
+| `--steps 0` | 무제한 (기본값) |
+| control `--vx` | Go2 전진 속도 명령, 0.2~0.8m/s |
+| 양쪽 `--control-port`, `--robot-id` | 포트·로봇 ID 변경 시 같은 값 지정 |
+| viewer 보고서 | 전진 거리·최저 높이·리셋·연결 횟수·정지 상태 보존 |
+| control 보고서 | 적용 확인 스텝 수·마지막 로봇 상태 |
+
+`passed`는 실행·통신 완료 결과다. 보행 성능은 보고서의 거리·높이·리셋 횟수로 확인한다.
+현재 자동 보행 합격 판정과 정책 export 기능은 제공하지 않는다.
+상세 통신·재접속 동작은 [viewer와 control 사용 안내](docs/viewer_control.md)를 참고한다.
+
+## 코드 수정 위치
+
+| 폴더 | 역할 |
+|---|---|
+| `assets/<robot>/` | 모델·관절·모터 설정·정책 파일·출처 |
+| `scenarios/` | 공통 배경·장애물·로봇 배치·관측·액션·리셋 설정 |
+| `control/<robot>/` | 로봇별 정책 추론과 viewer 내부 물리·상태 처리 |
+| `control/control_channel.py` | viewer·제어기 사이의 로컬 통신 |
+| `scripts/viewer.py` | 환경·로봇 선택 및 화면 실행 명령 |
+| `scripts/<robot>/` | 정책 준비·제어 연결·자산 관리 명령 |
+| `scripts/visualization/` | 공통 로컬/WebRTC 초기화·캐시·프로세스 관리 |
+| `tests/` | 단위 테스트·설치 및 기본 물리 검사 |
+| `third_party/` | submodule로 연결한 외부 소스 |
+| `.runtime/`, `.cache/`, `.conda/` | 로컬 실행 결과·캐시·가상환경 |
+
+장애물 위치·크기·카메라는 `scenarios/shipyard/scene_cfg.py`, Go2 모터 설정은
+`assets/go2/config/robot_cfg.py`, 정책 추론은 `control/go2/policy.py`를 수정한다.
+로봇 추가 절차는 [담당자용 개발 안내](docs/developer_guide.md)를 참고한다.
 
 ## 저장소와 참조 소스 받기
 
@@ -114,73 +229,20 @@ python -m pip check
 GPU에 접근 가능한 호스트에서 패키지·CUDA 연산과 Isaac Sim 실행을 확인한다.
 
 ```bash
-python scripts/check_isaacsim_install.py
-python scripts/smoke_test_isaacsim.py
-python scripts/go2/run_go2.py --headless --device cuda:0 --steps 500
+python tests/check_isaacsim_install.py
+python tests/smoke_test_isaacsim.py
 ```
 
 첫 번째 스크립트는 Python 3.11, 프로젝트 환경 경로, 주요 패키지, CUDA tensor 연산을 검사한다.
 두 번째 스크립트는 headless Kit 실행, URDF importer 명령, 큐브 낙하를 통한 PhysX 동작을 확인한다.
-세 번째는 같은 환경에서 Go2 평지 정책을 실행한다. 정책이 없으면 먼저 `python scripts/go2/prepare_go2_policy.py`를 실행한다.
+Go2 정책이 없으면 먼저 `python scripts/go2/prepare_go2_policy.py`를 실행한다.
 Isaac Sim 첫 실행 시에는 NVIDIA 라이선스 동의 안내에 직접 응답해야 한다.
 검사 결과는 `docs/isaacsim_install_evidence/`에 기록된다. HUNTER의 USD 변환·주행 검증은 별도 작업이다.
 
 서버 WebRTC 실행 명령, 연결 포트, 프로젝트 내부 cache/config 설정은
 [Isaac Sim 설정 문서](docs/isaacsim_5_setup.md)를 참고한다.
-Go2는 아래처럼 환경 보기, 정책 실행·내보내기, 전진 검증을 모두 WebRTC로 볼 수 있다.
-`192.168.0.10`을 클라이언트에서 접근 가능한 서버 주소로 바꾼다.
-명령은 한 번에 하나씩 실행하고 WebRTC Streaming Client에서 같은 IP로 연결한다.
-
-```bash
-export PUBLIC_IP=192.168.0.10
-python scripts/go2/run_go2_webrtc.py view
-# 이전 실행을 종료한 후 정책 데모 실행
-python scripts/go2/run_go2_webrtc.py policy
-# 이전 실행을 종료한 후 30초 전진 검증 실행
-python scripts/go2/run_go2_webrtc.py check --steps 1500 --vx 0.4
-```
-
-`--scenario shipyard`를 추가하면 화물 상자 3개가 있는 프로젝트 환경을 선택한다.
-`scenarios/shipyard/scene_cfg.py`에서 배치·크기·카메라를 수정한다.
-세 모드 모두 프로젝트 실행기를 사용한다.
-
-정책 export 위치와 연결 방법은 [Go2 실행 문서](docs/go2_setup.md)를 참고한다.
+Go2 설치와 정책 준비는 [Go2 실행 문서](docs/go2_setup.md)를 참고한다.
 환경 사용을 마치면 `conda deactivate`로 활성화를 해제한다.
-
-## 시나리오만 보기 및 화면 선택
-
-로봇 없이 환경만 보는 공통 viewer다. 기본값은 서버 데스크톱의 로컬 창이다.
-
-```bash
-python scripts/visualization/view_scenario.py --scenario shipyard --no-webrtc
-python scripts/visualization/view_scenario.py --scenario flat --no-webrtc
-python scripts/visualization/view_scenario.py --scenario shipyard --webrtc --server-ip 192.168.1.149
-```
-
-`--webrtc`는 headless 스트리밍, `--no-webrtc`는 서버 로컬 창을 사용한다.
-Go2 보기에도 같은 옵션을 사용할 수 있다.
-
-```bash
-python scripts/go2/run_go2.py --mode view --scenario shipyard --no-webrtc
-python scripts/go2/run_go2.py --mode view --scenario shipyard --webrtc --server-ip 192.168.1.149
-```
-
-기존 `run_go2_webrtc.py`는 기본 WebRTC를 유지하며 `--no-webrtc`도 지원한다.
-로컬 실행은 서버 데스크톱 세션의 화면 접근 권한이 필요하다.
-자세한 표시 설정은 [viewer 문서](scripts/visualization/README.md)를 참고한다.
-
-## 실행 스크립트 구성
-
-- `scripts/go2/`: Go2 정책 준비·물리 실행과 시나리오 선택.
-- `scripts/hunter2/`: 자산 준비·검증, 모델 비교, 운동학 검토.
-- `scripts/visualization/`: 공통 WebRTC 연결·렌더링·실시간 표시·프로세스 종료 처리.
-- `scripts/`: 공통 Isaac Sim 설치 검사와 기본 물리 검사.
-
-Go2 실행 코드는 WebRTC 주소·포트와 스트리밍 초기화 우회 설정을 직접 관리하지 않는다.
-시각화 모듈의 역할과 호출 흐름은 [구조 설명](scripts/visualization/README.md)을 참고한다.
-
-명령은 프로젝트 루트에서 실행한다. 로봇 자산·Conda·Isaac Lab 경로는
-프로젝트 루트를 기준으로 계산하므로 스크립트 이동 후에도 같은 구성을 사용한다.
 
 ## Isaac Sim 없이 HUNTER asset 검사
 
@@ -205,12 +267,13 @@ commit과 원본 파일의 SHA-256을 확인하므로 해당 저장소와 Git me
 - [구조 검사와 좌표·mesh 분석 결과](assets/hunter2/config/validation_report.json)
 
 `scenarios/`는 공통 장면과 로봇별 환경 연결, `assets/environments/`는 공통 배경 자산을 관리한다.
-`robots/{hunter2,go2,omni}`는 향후 제어 adapter용 관리 문서를 두었다.
+`control/go2/`는 정책 제어·환경 실행·상태 검증 코드를 관리한다.
+`control/{hunter2,omni}`는 향후 제어 adapter용 관리 문서를 두었다.
 `navigation`, `ros2_ws`는 향후 작업용 디렉터리다.
-[시나리오 관리 기준](scenarios/README.md)과 [로봇 제어 관리 기준](robots/README.md)을 참고한다.
+[시나리오 관리 기준](scenarios/README.md)과 [로봇 제어 관리 기준](control/README.md)을 참고한다.
 상위 navigation은 Goal/Path와 공통 상태 인터페이스를 사용하고 로봇별 adapter를 둔다.
 프로젝트 공통 controller/adapter와 waypoint follower는 아직 구현하지 않았다.
-Go2 단독 정책 실행은 `scripts/go2/run_go2.py`를 사용한다.
+Go2는 `scripts/viewer.py --robot go2`로 생성하고 `scripts/go2/control.py`로 제어한다.
 
 **HUNTER 상태: 조향축·중복 형상 교정 및 정적 검증 완료, Isaac import·물리/주행 검증 미완료.**
 독립 조향 운동 검증을 정상 Ackermann 주행 controller 완성으로 해석하지 않는다.

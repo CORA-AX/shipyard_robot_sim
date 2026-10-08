@@ -1,0 +1,78 @@
+{
+  "passed": true,
+  "scenario": "shipyard",
+  "frames": 0,
+  "headless": true,
+  "robot_id": "go2",
+  "scene_entities": [
+    "terrain",
+    "robot",
+    "contact_forces",
+    "sky_light",
+    "cargo_left",
+    "cargo_right",
+    "cargo_rear"
+  ],
+  "control_port": 8765,
+  "control_steps": 120,
+  "resets": 0,
+  "start_position": [
+    0.0,
+    0.0,
+    0.4000000059604645
+  ],
+  "minimum_base_height_m": 0.14999033510684967,
+  "paused_frames": 200,
+  "pause_state_unchanged": true,
+  "transitions": [
+    {
+      "step": 0,
+      "paused": false,
+      "reason": null,
+      "elapsed_s": 0.0007089350001479033
+    },
+    {
+      "step": 100,
+      "paused": true,
+      "reason": "controller_paused",
+      "elapsed_s": 6.160220644000219
+    },
+    {
+      "step": 100,
+      "paused": false,
+      "reason": "controller_paused",
+      "elapsed_s": 9.50062749999779
+    }
+  ],
+  "commanded_forward_m_s": 0.6,
+  "command_history": [
+    {
+      "step": 0,
+      "vx": 0.3,
+      "policy_command": [
+        0.30000001192092896,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "step": 100,
+      "vx": 0.6,
+      "policy_command": [
+        0.6000000238418579,
+        0.0,
+        0.0
+      ]
+    }
+  ],
+  "end_position": [
+    0.4849829077720642,
+    0.010426723398268223,
+    0.15336918830871582
+  ],
+  "forward_displacement_m": 0.4849829077720642,
+  "simulated_seconds": 2.4,
+  "control_connections": 2,
+  "control_disconnects": 1,
+  "rejected_messages": 0
+}

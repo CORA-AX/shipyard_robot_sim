@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Headless Kit/PhysX/importer smoke test; does not convert the HUNTER asset.
 
-After conda activation, run: python scripts/smoke_test_isaacsim.py.
+After conda activation, run: python tests/smoke_test_isaacsim.py.
 On first launch the vendor's EULA prompt must be answered by the user.
 """
 import json

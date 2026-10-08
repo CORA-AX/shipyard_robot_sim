@@ -1,0 +1,93 @@
+{
+  "date": "2026-10-08",
+  "scenario": "shipyard",
+  "display": "WebRTC/headless server; client video reception not checked",
+  "unit_tests": {
+    "passed": 45,
+    "failed": 0
+  },
+  "viewer": {
+    "passed": true,
+    "scenario": "shipyard",
+    "frames": 0,
+    "headless": true,
+    "robot_id": "go2",
+    "scene_entities": [
+      "terrain",
+      "robot",
+      "contact_forces",
+      "sky_light",
+      "cargo_left",
+      "cargo_right",
+      "cargo_rear"
+    ],
+    "control_port": 8765,
+    "control_steps": 520,
+    "resets": 0,
+    "start_position": [
+      0.0,
+      0.0,
+      0.4000000059604645
+    ],
+    "minimum_base_height_m": 0.15841080248355865,
+    "paused_frames": 624,
+    "pause_state_unchanged": true,
+    "transitions": [
+      {
+        "step": 0,
+        "paused": false,
+        "reason": null,
+        "elapsed_s": 0.0006832069993834011
+      },
+      {
+        "step": 500,
+        "paused": true,
+        "reason": "controller_paused",
+        "elapsed_s": 28.953574489998573
+      },
+      {
+        "step": 500,
+        "paused": false,
+        "reason": "controller_paused",
+        "elapsed_s": 33.279524511999625
+      }
+    ],
+    "end_position": [
+      2.584592580795288,
+      -0.011499159038066864,
+      0.16314074397087097
+    ],
+    "forward_displacement_m": 2.584592580795288,
+    "simulated_seconds": 10.4,
+    "control_connections": 2,
+    "control_disconnects": 1,
+    "rejected_messages": 0
+  },
+  "controller": {
+    "passed": true,
+    "robot_id": "go2",
+    "applied_steps": 500,
+    "last_state": {
+      "position": [
+        2.483182668685913,
+        -0.00630610715597868,
+        0.16173340380191803
+      ],
+      "forward_m_s": 0.17953908443450928,
+      "resets": 0
+    }
+  },
+  "reconnected_controller": {
+    "passed": true,
+    "robot_id": "go2",
+    "applied_steps": 20,
+    "last_state": {
+      "position": [
+        2.584592580795288,
+        -0.011499159038066864,
+        0.16314074397087097
+      ],
+      "resets": 0
+    }
+  }
+}

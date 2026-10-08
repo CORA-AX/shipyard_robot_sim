@@ -7,14 +7,14 @@ from unittest.mock import patch
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / 'scripts'))
-from visualization.display import add_display_arguments, launch_display
+from visualization.launcher import add_display_arguments, launch_display
 
 
 class DisplayChecks(unittest.TestCase):
     def test_local_mode_needs_no_ip_and_overrides_headless_environment(self):
         with patch.dict('os.environ', {'HEADLESS': '1', 'LIVESTREAM': '1'}), \
-                patch('visualization.display.run_process', return_value=0) as process, \
-                patch('visualization.display.check_port_available') as port:
+                patch('visualization.launcher.run_process', return_value=0) as process, \
+                patch('visualization.launcher.check_port_available') as port:
             launch_display(['worker.py'], root=ROOT, robot='display_test', webrtc=False, server_ip=None)
         command = process.call_args.args[0]
         self.assertEqual(command[-2:], ['--livestream', '0'])
@@ -24,8 +24,8 @@ class DisplayChecks(unittest.TestCase):
         port.assert_not_called()
 
     def test_webrtc_is_headless_and_uses_streaming_experience(self):
-        with patch('visualization.display.check_port_available'), \
-                patch('visualization.display.run_webrtc', return_value=0) as stream:
+        with patch('visualization.launcher.check_port_available'), \
+                patch('visualization.launcher.run_webrtc', return_value=0) as stream:
             launch_display(['worker.py'], root=ROOT, robot='display_test',
                            webrtc=True, server_ip='127.0.0.1')
         command = stream.call_args.args[0]

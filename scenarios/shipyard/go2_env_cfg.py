@@ -1,6 +1,6 @@
 """Bind Go2 observations and control to the shared shipyard layout."""
 from isaaclab.utils import configclass
-from assets.go2.scenarios.flat_env_cfg import FlatGo2EnvCfg, FlatSceneCfg
+from scenarios.flat.go2_env_cfg import FlatGo2EnvCfg, FlatSceneCfg
 from .scene_cfg import ShipyardSceneCfg, CAMERA_EYE, CAMERA_TARGET
 
 _GO2_SCENE_CFG = FlatSceneCfg(num_envs=1, env_spacing=2.5)

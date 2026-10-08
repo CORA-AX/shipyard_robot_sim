@@ -101,8 +101,8 @@ TCP 49100, UDP 47998 통신이 필요하다. SSH 접속 성공만으로 이 포�
 ```bash
 python -m pip list
 python -m pip check
-python scripts/check_isaacsim_install.py
-python scripts/smoke_test_isaacsim.py
+python tests/check_isaacsim_install.py
+python tests/smoke_test_isaacsim.py
 ```
 
 마지막 두 스크립트는 각각 GPU 연산 확인과 Kit/PhysX/URDF importer 검사용이다.
