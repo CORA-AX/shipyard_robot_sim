@@ -1,0 +1,27 @@
+{
+  "artifact_files_checked": 16,
+  "repeat_generation_byte_identical": true,
+  "vendor_worktrees_clean": true,
+  "usd_directory_only_gitkeep": true,
+  "unittest_cases_passed": 12,
+  "relocated_bundle_validation": "pass",
+  "local_document_links": "pass",
+  "artifact_sha256": {
+    "assets/hunter2/README.md": "73ab0d07f32c2bb407fe46fdd7229f80018de6ec0c92fd8f1bdd4ac2baa403b0",
+    "assets/hunter2/config/hunter2.yaml": "3766b5b0749cb74cc61af615f2abee6d979c40abdbe7e907061c7968fa38b9e6",
+    "assets/hunter2/config/sources.lock.json": "15ee36f8bb71e7910f3a1aa2e960ebfe60c64e8c1832107e2d4549233a85d432",
+    "assets/hunter2/config/validation_report.json": "36a6ed29a0dedccafe1edc5be414e75834ab397b24667f4e5004a2bc00d17e77",
+    "assets/hunter2/source/hunter2_sim.urdf": "966c4d323255f30759344b77ec177a5f8c39efa48d98eb47d9432f39ccf411bf",
+    "assets/hunter2/source/meshes/base_link.STL": "2b3a9368436ee48505a9e48119f63be612407eb91a05a60e264248deded5f0cc",
+    "assets/hunter2/source/meshes/front_left_wheel_link.STL": "a526ac8125c90f044c4977f659d050793a009197bb067ea9fe91c02b4cf9028a",
+    "assets/hunter2/source/meshes/front_right_wheel_link.STL": "1a644b2ef550172ac8b255b84b6e30a39794fdf6680653698fdbee069beb91eb",
+    "assets/hunter2/source/meshes/front_steer_left_link.STL": "091c1b863b790224b9affe5003f0fa79190d37bf037c69ffac4aa6b8f872a31f",
+    "assets/hunter2/source/meshes/front_steer_link.STL": "0299944ec73b0eff29b6d9887b4cb01ecce87d7a0a652a92ce6a8df783764c64",
+    "assets/hunter2/source/meshes/front_steer_right_link.STL": "5ed51bb9cda08f6940439761abf24bdf6950e37f6579d99880c320fc9b294db9",
+    "assets/hunter2/source/meshes/left_rear_link.STL": "93cc252596d2d82947997694fd38299ec4733a49992e54f6bbac1c75f1f7b80f",
+    "assets/hunter2/source/meshes/rear_wheel_link.STL": "f7db6f63c3fb6f19385af49b4468d09cf23ff22ba807d39a87361e545f24bebc",
+    "assets/hunter2/source/meshes/right_rear_link.STL": "220aba23b544d543b49305bd1ffc9b0f62223f2b38f88b6c8b738f4dcb00b996",
+    "assets/hunter2/source/original/hunter2_base.urdf": "8cd98f8a5ae69b633798f1d808a7c913a4506e72c863ef11c266f21277383201",
+    "assets/hunter2/usd/.gitkeep": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  }
+}

@@ -1,0 +1,50 @@
+{
+  "date": "2026-10-06",
+  "tests_passed": 28,
+  "test_command": "python3 -m unittest discover -s tests -v",
+  "repeat_generation_byte_identical": true,
+  "relocated_bundle_validation": "covered by passing test_relocated_bundle_and_physics_findings",
+  "immutable_asset_files_preserved": [
+    "assets/hunter2/config/sources.lock.json",
+    "assets/hunter2/source/meshes/base_link.STL",
+    "assets/hunter2/source/meshes/front_left_wheel_link.STL",
+    "assets/hunter2/source/meshes/front_right_wheel_link.STL",
+    "assets/hunter2/source/meshes/front_steer_left_link.STL",
+    "assets/hunter2/source/meshes/front_steer_link.STL",
+    "assets/hunter2/source/meshes/front_steer_right_link.STL",
+    "assets/hunter2/source/meshes/left_rear_link.STL",
+    "assets/hunter2/source/meshes/rear_wheel_link.STL",
+    "assets/hunter2/source/meshes/right_rear_link.STL",
+    "assets/hunter2/source/original/hunter2_base.urdf"
+  ],
+  "asset_sha256": {
+    "assets/hunter2/README.md": "90676be6c7461d1ae4bc925547d22fdf28445ba1860cb7f94a7378302b0e51d7",
+    "assets/hunter2/config/hunter2.yaml": "d0c1d2b348186ba34cf17f5511083b0f0fdfe61ea474025b5751d8df3cb32784",
+    "assets/hunter2/config/sources.lock.json": "15ee36f8bb71e7910f3a1aa2e960ebfe60c64e8c1832107e2d4549233a85d432",
+    "assets/hunter2/config/validation_report.json": "b059af6dd6f9413b9814151697a63cf87711052eabf1b699a8acbe34d5c0b7a7",
+    "assets/hunter2/source/hunter2_sim.urdf": "dd089214f9968b2d47fbf7fa90e3300c3d404dfcb8c814cd5913ecf95e60a93f",
+    "assets/hunter2/source/meshes/base_link.STL": "2b3a9368436ee48505a9e48119f63be612407eb91a05a60e264248deded5f0cc",
+    "assets/hunter2/source/meshes/front_left_wheel_link.STL": "a526ac8125c90f044c4977f659d050793a009197bb067ea9fe91c02b4cf9028a",
+    "assets/hunter2/source/meshes/front_right_wheel_link.STL": "1a644b2ef550172ac8b255b84b6e30a39794fdf6680653698fdbee069beb91eb",
+    "assets/hunter2/source/meshes/front_steer_left_link.STL": "091c1b863b790224b9affe5003f0fa79190d37bf037c69ffac4aa6b8f872a31f",
+    "assets/hunter2/source/meshes/front_steer_link.STL": "0299944ec73b0eff29b6d9887b4cb01ecce87d7a0a652a92ce6a8df783764c64",
+    "assets/hunter2/source/meshes/front_steer_right_link.STL": "5ed51bb9cda08f6940439761abf24bdf6950e37f6579d99880c320fc9b294db9",
+    "assets/hunter2/source/meshes/left_rear_link.STL": "93cc252596d2d82947997694fd38299ec4733a49992e54f6bbac1c75f1f7b80f",
+    "assets/hunter2/source/meshes/rear_wheel_link.STL": "f7db6f63c3fb6f19385af49b4468d09cf23ff22ba807d39a87361e545f24bebc",
+    "assets/hunter2/source/meshes/right_rear_link.STL": "220aba23b544d543b49305bd1ffc9b0f62223f2b38f88b6c8b738f4dcb00b996",
+    "assets/hunter2/source/original/hunter2_base.urdf": "8cd98f8a5ae69b633798f1d808a7c913a4506e72c863ef11c266f21277383201",
+    "assets/hunter2/usd/.gitkeep": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "vendor_clean_commits": {
+    "ugv_gazebo_sim": "27633a956c845903ee630538afeb17fe70afdd84",
+    "hunter_robot": "e073b273674459a13ec57b8731d06ddc8770546f",
+    "hunter_ros2_reference": "7bb146dd40fcea757b3516292319aa14ace41577"
+  },
+  "historical_comparison_artifacts_preserved": true,
+  "source_kinematics_validation": "pass",
+  "steering_geometry_ownership": "pass",
+  "physics_validated": false,
+  "isaac_import_validated": false,
+  "usd_created": false,
+  "local_document_links_valid": true
+}

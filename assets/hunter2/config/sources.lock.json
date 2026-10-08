@@ -1,0 +1,34 @@
+{
+  "schema_version": 1,
+  "reviewed_on": "2026-10-02",
+  "sources": [
+    {
+      "path": "third_party/ugv_gazebo_sim",
+      "url": "https://github.com/agilexrobotics/ugv_gazebo_sim.git",
+      "commit": "27633a956c845903ee630538afeb17fe70afdd84",
+      "files": {
+        "hunter/hunter2_base/urdf/hunter2_base.urdf": "8cd98f8a5ae69b633798f1d808a7c913a4506e72c863ef11c266f21277383201",
+        "hunter/hunter2_base/urdf/hunter2_base_gazebo.xacro": "4a8e6798bbf3cc7dbce4b9b44e5678bd8095cc7a18f534c90c823fde63490824",
+        "hunter/hunter2_base/package.xml": "87fb252bd3d7c87278f3fd8eaddd4cdbb162a6320a442f6496e1d510593390d4",
+        "hunter/hunter2_base/meshes/base_link.STL": "2b3a9368436ee48505a9e48119f63be612407eb91a05a60e264248deded5f0cc",
+        "hunter/hunter2_base/meshes/front_left_wheel_link.STL": "a526ac8125c90f044c4977f659d050793a009197bb067ea9fe91c02b4cf9028a",
+        "hunter/hunter2_base/meshes/front_right_wheel_link.STL": "1a644b2ef550172ac8b255b84b6e30a39794fdf6680653698fdbee069beb91eb",
+        "hunter/hunter2_base/meshes/front_steer_left_link.STL": "091c1b863b790224b9affe5003f0fa79190d37bf037c69ffac4aa6b8f872a31f",
+        "hunter/hunter2_base/meshes/front_steer_link.STL": "0299944ec73b0eff29b6d9887b4cb01ecce87d7a0a652a92ce6a8df783764c64",
+        "hunter/hunter2_base/meshes/front_steer_right_link.STL": "5ed51bb9cda08f6940439761abf24bdf6950e37f6579d99880c320fc9b294db9",
+        "hunter/hunter2_base/meshes/left_rear_link.STL": "93cc252596d2d82947997694fd38299ec4733a49992e54f6bbac1c75f1f7b80f",
+        "hunter/hunter2_base/meshes/rear_wheel_link.STL": "f7db6f63c3fb6f19385af49b4468d09cf23ff22ba807d39a87361e545f24bebc",
+        "hunter/hunter2_base/meshes/right_rear_link.STL": "220aba23b544d543b49305bd1ffc9b0f62223f2b38f88b6c8b738f4dcb00b996"
+      }
+    },
+    {
+      "path": "third_party/hunter_ros2_reference",
+      "url": "https://github.com/agilexrobotics/hunter_ros2.git",
+      "commit": "7bb146dd40fcea757b3516292319aa14ace41577",
+      "files": {
+        "hunter_base/include/hunter_base/hunter_params.hpp": "0ed14f0188485b55bbe0d1087095c25242fd505ae5b98d974494fc77ead160e6",
+        "hunter_base/include/hunter_base/hunter_messenger.hpp": "01b23a5ee102833064c287c34b607b56d49cdc48e0fab1ee1075bfcea26257d2"
+      }
+    }
+  ]
+}

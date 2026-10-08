@@ -1,0 +1,38 @@
+# SI units. Nominal official driver values, NOT measurements of this URDF.
+# Evidence: sources.lock.json, HunterV2Params; conflicts and TODOs in ../README.md.
+robot:
+  name: hunter2
+  type: ackermann
+geometry:
+  wheelbase: 0.650
+  track_width: 0.605
+  wheel_radius: 0.165
+limits:
+  max_linear_velocity: 1.5
+  max_wheel_steer_angle: 0.58
+  max_center_steer_angle: 0.461
+joints:
+  steering:
+    left: front_steer_left_joint
+    right: front_steer_right_joint
+  wheels:
+    front_left: front_left_wheel_joint
+    front_right: front_right_wheel_joint
+    rear_left: left_rear_joint
+    rear_right: right_rear_joint
+coordinate:
+  # Steering yaw checked mathematically; Isaac import is still untested.
+  forward: "+X"
+  left: "+Y"
+  up: "+Z"
+status:
+  source_prepared: true
+  steering_axis_corrected: true
+  steering_geometry_removed: true
+  source_kinematics_validated: true
+  physics_validated: false
+  isaac_import_validated: false
+  mass_inertia_calibrated: false
+  # Retain driver-derived +/-0.58 for this diagnostic source revision.
+  # Manual inner limit is 33 deg (~0.575959); reconcile before full-range driving.
+  steering_limit_policy: provisional_driver_bound

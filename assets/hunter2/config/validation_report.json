@@ -1,0 +1,401 @@
+{
+  "structural_validation": "pass",
+  "source_kinematics_validation": "pass",
+  "steering_geometry_ownership": "pass",
+  "steering_motion_probes": {
+    "front_steer_left_joint": [
+      {
+        "joint_angle_rad": -0.17453292519943295,
+        "rolling_heading_rad": -0.17453292520058664,
+        "other_wheel_heading_rad": -0.0,
+        "wheel_axle_in_base": [
+          -0.17364817766693033,
+          -0.9848077530055642,
+          -3.617400864179715e-06
+        ]
+      },
+      {
+        "joint_angle_rad": 0.0,
+        "rolling_heading_rad": 0.0,
+        "other_wheel_heading_rad": -0.0,
+        "wheel_axle_in_base": [
+          0.0,
+          -0.9999999999932537,
+          -3.673205103346574e-06
+        ]
+      },
+      {
+        "joint_angle_rad": 0.17453292519943295,
+        "rolling_heading_rad": 0.17453292520058664,
+        "other_wheel_heading_rad": -0.0,
+        "wheel_axle_in_base": [
+          0.17364817766693033,
+          -0.9848077530055642,
+          -3.617400864179715e-06
+        ]
+      }
+    ],
+    "front_steer_right_joint": [
+      {
+        "joint_angle_rad": -0.17453292519943295,
+        "rolling_heading_rad": -0.17453292520058664,
+        "other_wheel_heading_rad": 0.0,
+        "wheel_axle_in_base": [
+          0.17364817766693033,
+          0.9848077530055642,
+          3.617400864179715e-06
+        ]
+      },
+      {
+        "joint_angle_rad": 0.0,
+        "rolling_heading_rad": -0.0,
+        "other_wheel_heading_rad": 0.0,
+        "wheel_axle_in_base": [
+          0.0,
+          0.9999999999932537,
+          3.673205103346574e-06
+        ]
+      },
+      {
+        "joint_angle_rad": 0.17453292519943295,
+        "rolling_heading_rad": 0.17453292520058664,
+        "other_wheel_heading_rad": 0.0,
+        "wheel_axle_in_base": [
+          -0.17364817766693033,
+          0.9848077530055642,
+          3.617400864179715e-06
+        ]
+      }
+    ]
+  },
+  "physics_validated": false,
+  "isaac_import_validated": false,
+  "links": 9,
+  "joints": 8,
+  "mesh_references": 14,
+  "unique_meshes": 7,
+  "joint_details": [
+    {
+      "name": "front_steer_left_joint",
+      "type": "revolute",
+      "parent": "base_link",
+      "child": "front_steer_left_link",
+      "axis_local": [
+        0.0,
+        1.0,
+        0.0
+      ],
+      "origin_rpy": [
+        1.5708,
+        0.0,
+        0.0
+      ],
+      "origin_in_base": [
+        0.37142,
+        0.29199,
+        -0.1955
+      ],
+      "axis_in_base_at_zero": [
+        0.0,
+        -3.673205103346574e-06,
+        0.9999999999932537
+      ]
+    },
+    {
+      "name": "front_left_wheel_joint",
+      "type": "continuous",
+      "parent": "front_steer_left_link",
+      "child": "front_left_wheel_link",
+      "axis_local": [
+        0.0,
+        0.0,
+        1.0
+      ],
+      "origin_rpy": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "origin_in_base": [
+        0.37142,
+        0.29199,
+        -0.1955
+      ],
+      "axis_in_base_at_zero": [
+        0.0,
+        -0.9999999999932537,
+        -3.673205103346574e-06
+      ]
+    },
+    {
+      "name": "front_steer_right_joint",
+      "type": "revolute",
+      "parent": "base_link",
+      "child": "front_steer_right_link",
+      "axis_local": [
+        0.0,
+        1.0,
+        0.0
+      ],
+      "origin_rpy": [
+        1.5708,
+        0.0,
+        0.0
+      ],
+      "origin_in_base": [
+        0.37142,
+        -0.29201,
+        -0.1955
+      ],
+      "axis_in_base_at_zero": [
+        0.0,
+        -3.673205103346574e-06,
+        0.9999999999932537
+      ]
+    },
+    {
+      "name": "front_right_wheel_joint",
+      "type": "continuous",
+      "parent": "front_steer_right_link",
+      "child": "front_right_wheel_link",
+      "axis_local": [
+        0.0,
+        0.0,
+        -1.0
+      ],
+      "origin_rpy": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "origin_in_base": [
+        0.37142,
+        -0.29201,
+        -0.1955
+      ],
+      "axis_in_base_at_zero": [
+        0.0,
+        0.9999999999932537,
+        3.673205103346574e-06
+      ]
+    },
+    {
+      "name": "left_rear_joint",
+      "type": "continuous",
+      "parent": "base_link",
+      "child": "left_rear_link",
+      "axis_local": [
+        0.0,
+        0.0,
+        1.0
+      ],
+      "origin_rpy": [
+        1.5708,
+        0.0,
+        0.0
+      ],
+      "origin_in_base": [
+        -0.28,
+        0.29249,
+        -0.19558
+      ],
+      "axis_in_base_at_zero": [
+        0.0,
+        -0.9999999999932537,
+        -3.673205103346574e-06
+      ]
+    },
+    {
+      "name": "right_rear_joint",
+      "type": "continuous",
+      "parent": "base_link",
+      "child": "right_rear_link",
+      "axis_local": [
+        0.0,
+        0.0,
+        -1.0
+      ],
+      "origin_rpy": [
+        1.5708,
+        0.0026575,
+        0.0
+      ],
+      "origin_in_base": [
+        -0.28018,
+        -0.29251,
+        -0.19558
+      ],
+      "axis_in_base_at_zero": [
+        9.761531072313737e-09,
+        0.9999999999932537,
+        3.6731921327045282e-06
+      ]
+    },
+    {
+      "name": "front_steer_joint",
+      "type": "fixed",
+      "parent": "base_link",
+      "child": "front_steer_link",
+      "axis_local": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "origin_rpy": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "origin_in_base": [
+        0.44792,
+        -1.1431e-05,
+        -0.121
+      ],
+      "axis_in_base_at_zero": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "rear_wheel_joint",
+      "type": "fixed",
+      "parent": "base_link",
+      "child": "rear_wheel_link",
+      "axis_local": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "origin_rpy": [
+        0.0032313,
+        0.0,
+        0.0
+      ],
+      "origin_in_base": [
+        -0.42408,
+        -1.1431e-05,
+        -0.085581
+      ],
+      "axis_in_base_at_zero": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    }
+  ],
+  "mesh_bounds": {
+    "meshes/base_link.STL": {
+      "triangles": 129044,
+      "local_min": [
+        -0.43808460235595703,
+        -0.32201144099235535,
+        -0.251185804605484
+      ],
+      "local_max": [
+        0.5259153842926025,
+        0.321988582611084,
+        0.017000000923871994
+      ]
+    },
+    "meshes/front_left_wheel_link.STL": {
+      "triangles": 36470,
+      "local_min": [
+        -0.16405217349529266,
+        -0.16377942264080048,
+        -0.08028274029493332
+      ],
+      "local_max": [
+        0.1641574501991272,
+        0.16412745416164398,
+        0.06128298118710518
+      ]
+    },
+    "meshes/front_right_wheel_link.STL": {
+      "triangles": 19714,
+      "local_min": [
+        -0.16386015713214874,
+        -0.1641441136598587,
+        -0.06128298118710518
+      ],
+      "local_max": [
+        0.16407254338264465,
+        0.16405338048934937,
+        0.08028274029493332
+      ]
+    },
+    "meshes/left_rear_link.STL": {
+      "triangles": 29308,
+      "local_min": [
+        -0.16421937942504883,
+        -0.16360366344451904,
+        -0.08028274029493332
+      ],
+      "local_max": [
+        0.1640450656414032,
+        0.16404089331626892,
+        0.06128298118710518
+      ]
+    },
+    "meshes/right_rear_link.STL": {
+      "triangles": 36686,
+      "local_min": [
+        -0.1640450656414032,
+        -0.16360366344451904,
+        -0.06128298118710518
+      ],
+      "local_max": [
+        0.16421937942504883,
+        0.16404089331626892,
+        0.08028274029493332
+      ]
+    },
+    "meshes/front_steer_link.STL": {
+      "triangles": 1984,
+      "local_min": [
+        0.01600000075995922,
+        -0.009499999694526196,
+        0.001999999163672328
+      ],
+      "local_max": [
+        0.06619999557733536,
+        0.009499999694526196,
+        0.029999999329447746
+      ]
+    },
+    "meshes/rear_wheel_link.STL": {
+      "triangles": 3120,
+      "local_min": [
+        -0.014000000432133675,
+        0.00455027911812067,
+        -0.1522422581911087
+      ],
+      "local_max": [
+        0.027950000017881393,
+        0.03462767228484154,
+        -0.10951526463031769
+      ]
+    }
+  },
+  "link_masses_kg": {
+    "base_link": 6.02945169536679,
+    "front_steer_left_link": 7.8526,
+    "front_left_wheel_link": 7.7007,
+    "front_steer_right_link": 7.696,
+    "front_right_wheel_link": 7.5613,
+    "left_rear_link": 7.6692,
+    "right_rear_link": 7.7133,
+    "front_steer_link": 0.0049179,
+    "rear_wheel_link": 0.0
+  },
+  "total_mass_kg": 52.227469595366806,
+  "warnings": [
+    "rear_wheel_link: zero mass/inertia retained; review fixed-link handling before physics",
+    "left_rear_joint: velocity limit 1 rad/s below nominal straight-speed requirement 9.090909 rad/s.",
+    "right_rear_joint: velocity limit 1 rad/s below nominal straight-speed requirement 9.090909 rad/s.",
+    "Steering geometry was removed but vendor inertials are retained; mass distribution and omitted non-wheel geometry require review.",
+    "Driver-derived +/-0.58 rad is provisional; manual inner limit 33 degrees differs. Resolve before full-range driving.",
+    "Static independent steering probes do not validate Ackermann control or contact dynamics.",
+    "Relative mesh resolution by the selected Isaac Sim importer remains untested."
+  ]
+}

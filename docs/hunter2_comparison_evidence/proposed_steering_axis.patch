@@ -1,0 +1,20 @@
+--- a/assets/hunter2/source/hunter2_sim.urdf
++++ b/assets/hunter2/source/hunter2_sim.urdf
+@@ -95,7 +95,7 @@
+     <child
+       link="front_steer_left_link" />
+     <axis
+-      xyz="0 0 1" />
++      xyz="0 1 0" />
+     <limit
+       lower="-0.58"
+       upper="0.58"
+@@ -206,7 +206,7 @@
+     <child
+       link="front_steer_right_link" />
+     <axis
+-      xyz="0 0 -1" />
++      xyz="0 1 0" />
+     <limit
+       lower="-0.58"
+       upper="0.58"

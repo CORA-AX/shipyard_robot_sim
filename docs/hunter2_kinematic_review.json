@@ -1,0 +1,392 @@
+{
+  "scope": "static source review, no USD import or physics execution",
+  "source_sha256": {
+    "third_party/ugv_gazebo_sim/hunter/hunter2_base/urdf/hunter2_base.urdf": "8cd98f8a5ae69b633798f1d808a7c913a4506e72c863ef11c266f21277383201",
+    "assets/hunter2/source/hunter2_sim.urdf": "966c4d323255f30759344b77ec177a5f8c39efa48d98eb47d9432f39ccf411bf",
+    "third_party/ugv_gazebo_sim/hunter/hunter2_base/urdf/hunter2_base_gazebo.xacro": "4a8e6798bbf3cc7dbce4b9b44e5678bd8095cc7a18f534c90c823fde63490824"
+  },
+  "original_nonzero_angles_are_hypothetical": true,
+  "kinematic_probes": {
+    "original": {
+      "left": {
+        "axis_local": [
+          0.0,
+          0.0,
+          1.0
+        ],
+        "axis_in_base": [
+          0.0,
+          -0.9999999999932537,
+          -3.673205103346574e-06
+        ],
+        "samples": [
+          {
+            "joint_angle_rad": -0.58,
+            "wheel_axle_in_base": [
+              0.0,
+              -0.9999999999932537,
+              -3.673205103346574e-06
+            ],
+            "rolling_heading_rad": 0.0
+          },
+          {
+            "joint_angle_rad": -0.3,
+            "wheel_axle_in_base": [
+              0.0,
+              -0.9999999999932537,
+              -3.673205103346574e-06
+            ],
+            "rolling_heading_rad": 0.0
+          },
+          {
+            "joint_angle_rad": 0.0,
+            "wheel_axle_in_base": [
+              0.0,
+              -0.9999999999932537,
+              -3.673205103346574e-06
+            ],
+            "rolling_heading_rad": 0.0
+          },
+          {
+            "joint_angle_rad": 0.3,
+            "wheel_axle_in_base": [
+              0.0,
+              -0.9999999999932537,
+              -3.673205103346574e-06
+            ],
+            "rolling_heading_rad": 0.0
+          },
+          {
+            "joint_angle_rad": 0.58,
+            "wheel_axle_in_base": [
+              0.0,
+              -0.9999999999932537,
+              -3.673205103346574e-06
+            ],
+            "rolling_heading_rad": 0.0
+          }
+        ]
+      },
+      "right": {
+        "axis_local": [
+          0.0,
+          0.0,
+          -1.0
+        ],
+        "axis_in_base": [
+          0.0,
+          0.9999999999932537,
+          3.673205103346574e-06
+        ],
+        "samples": [
+          {
+            "joint_angle_rad": -0.58,
+            "wheel_axle_in_base": [
+              0.0,
+              0.9999999999932537,
+              3.673205103346574e-06
+            ],
+            "rolling_heading_rad": 0.0
+          },
+          {
+            "joint_angle_rad": -0.3,
+            "wheel_axle_in_base": [
+              0.0,
+              0.9999999999932537,
+              3.673205103346574e-06
+            ],
+            "rolling_heading_rad": 0.0
+          },
+          {
+            "joint_angle_rad": 0.0,
+            "wheel_axle_in_base": [
+              0.0,
+              0.9999999999932537,
+              3.673205103346574e-06
+            ],
+            "rolling_heading_rad": 0.0
+          },
+          {
+            "joint_angle_rad": 0.3,
+            "wheel_axle_in_base": [
+              0.0,
+              0.9999999999932537,
+              3.673205103346574e-06
+            ],
+            "rolling_heading_rad": 0.0
+          },
+          {
+            "joint_angle_rad": 0.58,
+            "wheel_axle_in_base": [
+              0.0,
+              0.9999999999932537,
+              3.673205103346574e-06
+            ],
+            "rolling_heading_rad": 0.0
+          }
+        ]
+      }
+    },
+    "current": {
+      "left": {
+        "axis_local": [
+          0.0,
+          0.0,
+          1.0
+        ],
+        "axis_in_base": [
+          0.0,
+          -0.9999999999932537,
+          -3.673205103346574e-06
+        ],
+        "samples": [
+          {
+            "joint_angle_rad": -0.58,
+            "wheel_axle_in_base": [
+              0.0,
+              -0.9999999999932537,
+              -3.673205103346574e-06
+            ],
+            "rolling_heading_rad": 0.0
+          },
+          {
+            "joint_angle_rad": -0.3,
+            "wheel_axle_in_base": [
+              0.0,
+              -0.9999999999932537,
+              -3.673205103346574e-06
+            ],
+            "rolling_heading_rad": 0.0
+          },
+          {
+            "joint_angle_rad": 0.0,
+            "wheel_axle_in_base": [
+              0.0,
+              -0.9999999999932537,
+              -3.673205103346574e-06
+            ],
+            "rolling_heading_rad": 0.0
+          },
+          {
+            "joint_angle_rad": 0.3,
+            "wheel_axle_in_base": [
+              0.0,
+              -0.9999999999932537,
+              -3.673205103346574e-06
+            ],
+            "rolling_heading_rad": 0.0
+          },
+          {
+            "joint_angle_rad": 0.58,
+            "wheel_axle_in_base": [
+              0.0,
+              -0.9999999999932537,
+              -3.673205103346574e-06
+            ],
+            "rolling_heading_rad": 0.0
+          }
+        ]
+      },
+      "right": {
+        "axis_local": [
+          0.0,
+          0.0,
+          -1.0
+        ],
+        "axis_in_base": [
+          0.0,
+          0.9999999999932537,
+          3.673205103346574e-06
+        ],
+        "samples": [
+          {
+            "joint_angle_rad": -0.58,
+            "wheel_axle_in_base": [
+              0.0,
+              0.9999999999932537,
+              3.673205103346574e-06
+            ],
+            "rolling_heading_rad": 0.0
+          },
+          {
+            "joint_angle_rad": -0.3,
+            "wheel_axle_in_base": [
+              0.0,
+              0.9999999999932537,
+              3.673205103346574e-06
+            ],
+            "rolling_heading_rad": 0.0
+          },
+          {
+            "joint_angle_rad": 0.0,
+            "wheel_axle_in_base": [
+              0.0,
+              0.9999999999932537,
+              3.673205103346574e-06
+            ],
+            "rolling_heading_rad": 0.0
+          },
+          {
+            "joint_angle_rad": 0.3,
+            "wheel_axle_in_base": [
+              0.0,
+              0.9999999999932537,
+              3.673205103346574e-06
+            ],
+            "rolling_heading_rad": 0.0
+          },
+          {
+            "joint_angle_rad": 0.58,
+            "wheel_axle_in_base": [
+              0.0,
+              0.9999999999932537,
+              3.673205103346574e-06
+            ],
+            "rolling_heading_rad": 0.0
+          }
+        ]
+      }
+    },
+    "gazebo": {
+      "left": {
+        "axis_local": [
+          0.0,
+          1.0,
+          0.0
+        ],
+        "axis_in_base": [
+          0.0,
+          -3.673205103346574e-06,
+          0.9999999999932537
+        ],
+        "samples": [
+          {
+            "joint_angle_rad": -0.58,
+            "wheel_axle_in_base": [
+              0.5480239367918737,
+              0.8364626499095439,
+              3.0724988744272635e-06
+            ],
+            "rolling_heading_rad": -0.5800000000030926
+          },
+          {
+            "joint_angle_rad": -0.3,
+            "wheel_axle_in_base": [
+              0.29552020666133955,
+              0.955336489119161,
+              3.5091468672693745e-06
+            ],
+            "rolling_heading_rad": -0.3000000000019046
+          },
+          {
+            "joint_angle_rad": 0.0,
+            "wheel_axle_in_base": [
+              0.0,
+              0.9999999999932537,
+              3.673205103346574e-06
+            ],
+            "rolling_heading_rad": 0.0
+          },
+          {
+            "joint_angle_rad": 0.3,
+            "wheel_axle_in_base": [
+              -0.29552020666133955,
+              0.955336489119161,
+              3.5091468672693745e-06
+            ],
+            "rolling_heading_rad": 0.3000000000019046
+          },
+          {
+            "joint_angle_rad": 0.58,
+            "wheel_axle_in_base": [
+              -0.5480239367918737,
+              0.8364626499095439,
+              3.0724988744272635e-06
+            ],
+            "rolling_heading_rad": 0.5800000000030926
+          }
+        ]
+      },
+      "right": {
+        "axis_local": [
+          0.0,
+          1.0,
+          0.0
+        ],
+        "axis_in_base": [
+          0.0,
+          -3.673205103346574e-06,
+          0.9999999999932537
+        ],
+        "samples": [
+          {
+            "joint_angle_rad": -0.58,
+            "wheel_axle_in_base": [
+              0.5480239367918737,
+              0.8364626499095439,
+              3.0724988744272635e-06
+            ],
+            "rolling_heading_rad": -0.5800000000030926
+          },
+          {
+            "joint_angle_rad": -0.3,
+            "wheel_axle_in_base": [
+              0.29552020666133955,
+              0.955336489119161,
+              3.5091468672693745e-06
+            ],
+            "rolling_heading_rad": -0.3000000000019046
+          },
+          {
+            "joint_angle_rad": 0.0,
+            "wheel_axle_in_base": [
+              0.0,
+              0.9999999999932537,
+              3.673205103346574e-06
+            ],
+            "rolling_heading_rad": 0.0
+          },
+          {
+            "joint_angle_rad": 0.3,
+            "wheel_axle_in_base": [
+              -0.29552020666133955,
+              0.955336489119161,
+              3.5091468672693745e-06
+            ],
+            "rolling_heading_rad": 0.3000000000019046
+          },
+          {
+            "joint_angle_rad": 0.58,
+            "wheel_axle_in_base": [
+              -0.5480239367918737,
+              0.8364626499095439,
+              3.0724988744272635e-06
+            ],
+            "rolling_heading_rad": 0.5800000000030926
+          }
+        ]
+      }
+    }
+  },
+  "mesh_shared_triangles": {
+    "left": {
+      "steering_mesh_triangles": 53442,
+      "wheel_mesh_triangles": 36470,
+      "shared_triangles_at_zero_rounded_1um": 36470
+    },
+    "right": {
+      "steering_mesh_triangles": 30924,
+      "wheel_mesh_triangles": 19714,
+      "shared_triangles_at_zero_rounded_1um": 19714
+    }
+  },
+  "total_mass_kg": {
+    "original": 52.227469595366806,
+    "current": 52.227469595366806,
+    "gazebo": 67.23238749536678
+  },
+  "nominal_center_0_461_inner_rad": 0.5735768798930864,
+  "rear_limit_1_rad_s_nominal_speed_m_s": 0.165,
+  "wheel_speed_for_nominal_1_5_m_s_rad_s": 9.09090909090909,
+  "physics_validated": false
+}

@@ -1,0 +1,7 @@
+# Create with: conda env create --prefix ./.conda/isaacsim-5.0 -f environment.isaacsim.yml
+# Conda manager is external; the environment itself lives in this project.
+channels:
+  - conda-forge
+dependencies:
+  - python=3.11
+  - pip
