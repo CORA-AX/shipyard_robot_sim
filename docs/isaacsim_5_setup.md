@@ -25,7 +25,7 @@ Isaac Lab·Go2도 같은 `.conda/isaacsim-5.0`을 사용한다. [Go2 설정 문�
 | packaging / wheel | 23.0 / 0.45.1 |
 
 pip가 인식하는 Python 배포 패키지는 **230개**다. 정확한 전체 이름과 버전은
-[기존 패키지 목록 파일](../requirements-isaacsim.lock.txt)에 기록했다.
+[기존 패키지 목록 파일](../requirements.lock.txt)에 기록했다.
 Isaac Sim이 확장 폴더에 포함한 USD·PhysX·WebRTC 등의 구성은 별도 pip 항목과 일대일 대응하지 않는다.
 `extscache` 3개 패키지는 실행에 쓰이는 Kit/SDK/Physics 확장 파일이며,
 프로젝트 `.cache`의 pip 다운로드 캐시와 다르다.
@@ -119,15 +119,16 @@ WebRTC 실제 화면 연결 및 HUNTER 차량 물리 검증은 별도다.
 conda env create --prefix ./.conda/isaacsim-5.0 -f environment.isaacsim.yml
 conda activate "$PWD/.conda/isaacsim-5.0"
 python -m pip install 'torch==2.7.0' 'torchvision==0.22.0' --index-url https://download.pytorch.org/whl/cu128
-python -m pip install -r requirements-isaacsim.txt
 git submodule update --init --recursive
-python -m pip install 'setuptools==80.9.0'
-python -m pip install --no-build-isolation -r requirements-go2-isaaclab.txt
+python -m pip install -c requirements.lock.txt setuptools wheel toml
+python -m pip install --no-build-isolation -r requirements.txt
 python -m pip check
 ```
 
-이것은 주요 버전을 지정한 설치 절차이며 전이 의존성까지 같은 버전으로 재현한다고 보장하지 않는다.
-전체 버전 대조에는 `requirements-isaacsim.lock.txt`를 사용한다.
+`requirements.txt`로 통합 설치하며, 참조하는 버전 제약은 의존성에도 적용된다.
+`--no-build-isolation`에 필요한 setuptools·wheel·toml을 먼저 준비한다.
+버전 제약 파일은 해시와 패키지 출처까지 고정한 완전한 lock은 아니다.
+전체 버전 대조에는 `requirements.lock.txt`를 사용한다.
 
 ## 파일 정리 범위
 

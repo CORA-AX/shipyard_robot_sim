@@ -84,8 +84,8 @@ source /home/rodix-gpu/miniforge3/etc/profile.d/conda.sh
 conda activate "$PWD/.conda/isaacsim-5.0"
 export PIP_CACHE_DIR="$PWD/.cache/pip"
 git submodule update --init --recursive
-python -m pip install 'setuptools==80.9.0'
-python -m pip install --no-build-isolation -r requirements-go2-isaaclab.txt
+python -m pip install -c requirements.lock.txt setuptools wheel toml
+python -m pip install --no-build-isolation -r requirements.txt
 python -m pip check
 python scripts/go2/prepare_go2_policy.py
 python tests/check_isaacsim_install.py
@@ -93,7 +93,8 @@ python tests/check_isaacsim_install.py
 
 기존 소스 폴더에 Git 메타데이터가 없으면 submodule 연결 정리가 필요하다.
 [현재 연결 상태](organization_sources.md)를 참고한다.
-Isaac Lab commit은 위 표의 값과 일치해야 한다. 필요한 RSL-RL extra만 설치한다.
+Isaac Lab commit은 위 표의 값과 일치해야 한다. 통합 `requirements.txt`가 Isaac Sim과
+Isaac Lab·RSL-RL을 함께 설치하며, `requirements.lock.txt`의 버전 제약을 적용한다.
 `tests/check_isaacsim_install.py`와 viewer는 같은 공통 환경 경로를 검사한다.
 
 ## 검증 결과와 범위

@@ -146,7 +146,7 @@ cd shipyard_robot_sim
 GPU 드라이버와 OS 라이브러리는 호스트에 준비되어 있어야 한다.
 
 2026-10-08 통합한 환경의 주요 설치 버전은 다음과 같다. 전체 목록은
-[Python 패키지 버전 기록](requirements-isaacsim.lock.txt)에 있다.
+[Python 패키지 버전 기록](requirements.lock.txt)에 있다.
 
 | 패키지 | 기록된 버전 / 용도 |
 |---|---|
@@ -168,15 +168,15 @@ URDF 정적 검사에는 ROS나 Isaac Sim 설치가 필요하지 않다.
 | 파일 | 용도 |
 |---|---|
 | [environment.isaacsim.yml](environment.isaacsim.yml) | Conda 기반 환경 생성: Python 3.11과 pip |
-| [requirements-isaacsim.txt](requirements-isaacsim.txt) | 기본 설치용: `isaacsim[all,extscache]==5.0.0`, `wheel==0.45.1`, NVIDIA 패키지 인덱스 |
-| [requirements-isaacsim.lock.txt](requirements-isaacsim.lock.txt) | 통합 환경의 Python 배포 패키지 230개 버전 기록: 설치 제약·환경 비교용 |
+| [requirements.txt](requirements.txt) | Isaac Sim·Isaac Lab·RSL-RL 통합 설치 요구사항, NVIDIA 인덱스·editable 소스 |
+| [requirements.lock.txt](requirements.lock.txt) | 검증한 Python 패키지 230개 버전 제약. `requirements.txt`가 `-c`로 참조 |
 | [conda-isaacsim-linux-64.lock.txt](conda-isaacsim-linux-64.lock.txt) | Linux용 Conda 기반 패키지 설치 기록 |
-| [requirements-go2-isaaclab.txt](requirements-go2-isaaclab.txt) | 동일 환경에 추가하는 Isaac Lab·RSL-RL 의존성. [Go2 설치 절차](docs/go2_setup.md) 참고 |
 
-두 `requirements-isaacsim` 파일은 **설치 요구사항**과 **설치 결과 기록**을 나누기 위해 유지한다.
-기본 설치에는 `requirements-isaacsim.txt`를 사용하고 CUDA PyTorch는 아래 명령으로 먼저 설치한다.
-`.lock.txt`는 해시와 다운로드 출처까지 고정한 lock 파일이 아니라 버전 목록이다.
-기본 설치 절차는 모든 하위 의존성까지 기존 환경과 같은 버전으로 재현한다고 보장하지 않는다.
+requirements는 **설치 요구사항**과 **검증된 버전 제약** 두 파일로 관리한다.
+CUDA PyTorch를 먼저 설치하고 submodule·빌드 도구를 준비한 뒤 `requirements.txt`로 통합 설치한다.
+`--no-build-isolation`을 사용하므로 setuptools·wheel·toml을 먼저 설치해야 한다.
+`requirements.lock.txt`는 해시·다운로드 출처까지 고정한 완전한 lock 파일은 아니다.
+버전 제약은 의존성 설치에 적용되지만 기록된 모든 패키지를 별도로 설치하는 목록은 아니다.
 
 Isaac Sim 5.0의 `packaging==23.0` 요구사항과 호환되도록 `wheel==0.45.1`을 지정했다.
 pip가 설치 과정에서 packaging/wheel 버전을 바꿨으므로 Conda 기록만으로 전체 환경을 복원할 수 없다.
@@ -200,13 +200,12 @@ conda activate "$PWD/.conda/isaacsim-5.0"
 # 2. CUDA 12.8용 PyTorch를 먼저 설치
 python -m pip install 'torch==2.7.0' 'torchvision==0.22.0' --index-url https://download.pytorch.org/whl/cu128
 
-# 3. Isaac Sim 전체 기능과 확장 캐시 설치
-python -m pip install -r requirements-isaacsim.txt
-
-# 4. 같은 환경에 Isaac Lab과 Go2 의존성 설치
+# 3. 원본 소스와 editable 설치에 필요한 빌드 도구 준비
 git submodule update --init --recursive
-python -m pip install 'setuptools==80.9.0'
-python -m pip install --no-build-isolation -r requirements-go2-isaaclab.txt
+python -m pip install -c requirements.lock.txt setuptools wheel toml
+
+# 4. Isaac Sim + Isaac Lab 통합 설치
+python -m pip install --no-build-isolation -r requirements.txt
 python -m pip check
 ```
 
