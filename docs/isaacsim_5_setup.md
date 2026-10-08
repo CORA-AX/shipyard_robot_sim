@@ -1,11 +1,12 @@
 # Isaac Sim 5.0 설치 현황과 직접 실행
 
-2026-10-07 실제 설치 파일 및 pip metadata 기준. 프로젝트 환경은 **하나**다.
+2026-10-08 기준의 공통 Isaac Sim 환경 안내다.
+Isaac Lab·Go2도 같은 `.conda/isaacsim-5.0`을 사용한다. [Go2 설정 문서](go2_setup.md)를 참고한다.
 
 ## 설치 구조
 
 - Conda 관리자: 기존 `/home/rodix-gpu/miniforge3` 재사용. 프로젝트에 Conda 관리자를 새로 설치하지 않았다.
-- 가상환경: `/home/rodix-gpu/shipyard_robot_sim/.conda/isaacsim-5.0` (약 18 GiB).
+- 가상환경: `/home/rodix-gpu/shipyard_robot_sim/.conda/isaacsim-5.0` (Isaac Lab 포함 약 19 GiB).
 - Conda로 Python 3.11 환경을 만들고, 그 안에 pip로 CUDA 12.8용 PyTorch와 `isaacsim[all,extscache]==5.0.0`을 설치했다.
 - Docker나 별도 Isaac Sim 압축 배포판을 사용한 설치가 아니다.
 - GPU 드라이버와 OS 라이브러리는 서버에 있다. 프로젝트 환경에는 PyTorch용 CUDA 라이브러리가 들어 있다.
@@ -19,10 +20,11 @@
 | torch / torchvision / torchaudio | 2.7.0+cu128 / 0.22.0+cu128 / 2.7.0 |
 | NumPy / SciPy | 1.26.0 / 1.15.3 |
 | trimesh / OpenCV headless | 4.5.1 / 4.11.0.86 |
-| pip / setuptools | 26.2.1 / 84.0.0 |
+| pip / setuptools | 26.2.1 / 80.9.0 |
+| Isaac Lab / RSL-RL | 소스 릴리스 v2.2.1 (`isaaclab` 배포 패키지 0.45.9) / 2.3.3 |
 | packaging / wheel | 23.0 / 0.45.1 |
 
-pip가 인식하는 Python 배포 패키지는 **155개**다. 정확한 전체 이름과 버전은
+pip가 인식하는 Python 배포 패키지는 **230개**다. 정확한 전체 이름과 버전은
 [기존 패키지 목록 파일](../requirements-isaacsim.lock.txt)에 기록했다.
 Isaac Sim이 확장 폴더에 포함한 USD·PhysX·WebRTC 등의 구성은 별도 pip 항목과 일대일 대응하지 않는다.
 `extscache` 3개 패키지는 실행에 쓰이는 Kit/SDK/Physics 확장 파일이며,
@@ -30,7 +32,7 @@ Isaac Sim이 확장 폴더에 포함한 USD·PhysX·WebRTC 등의 구성은 별�
 
 현재 구성은 최소 설치가 아니라 **전체 기능 + 확장 캐시** 설치다.
 GUI, 로봇/센서, URDF import, ROS 연동, Replicator, RL 관련 기능, 예제, 테스트 등의 패키지가 포함되어 있다.
-Isaac Lab 자체는 설치되어 있지 않다. `isaacsim-ros2`는 Isaac의 ROS 연동 구성이고,
+Isaac Lab은 `third_party/IsaacLab`에서 editable 설치되어 있다. `isaacsim-ros2`는 Isaac의 ROS 연동 구성이고,
 별도 ROS 2 배포판 전체를 설치한 것을 의미하지 않는다.
 이번 정리는 실행 방법을 단순화한 것이며 설치 패키지를 제거하지 않았다.
 
@@ -105,9 +107,9 @@ python scripts/smoke_test_isaacsim.py
 
 마지막 두 스크립트는 각각 GPU 연산 확인과 Kit/PhysX/URDF importer 검사용이다.
 GPU에 접근 가능한 호스트에서 실행한다. HUNTER USD 변환·주행 검사는 별도다.
-2026-10-07 재확인한 `pip check`는 통과했다. 이번 정리에서 Isaac Sim을 새로 실행하지 않았다.
-이전 사용자 로그에서 라이선스 직접 동의 및 Vulkan 초기화는 확인했지만,
-WebRTC 실제 화면 연결 및 차량 물리 검증 완료를 뜻하지 않는다.
+2026-10-08 통합 후 `pip check`, CUDA 연산, Kit 시작, PhysX 낙하, URDF importer 검사를 통과했다.
+같은 환경의 Go2 평지 정책도 500스텝 실행했다. [통합 실행 기록](environment_unification/runtime_check.json)을 참고한다.
+WebRTC 실제 화면 연결 및 HUNTER 차량 물리 검증은 별도다.
 
 ## 재설치가 필요할 때만
 
@@ -118,6 +120,9 @@ conda env create --prefix ./.conda/isaacsim-5.0 -f environment.isaacsim.yml
 conda activate "$PWD/.conda/isaacsim-5.0"
 python -m pip install 'torch==2.7.0' 'torchvision==0.22.0' --index-url https://download.pytorch.org/whl/cu128
 python -m pip install -r requirements-isaacsim.txt
+git submodule update --init --recursive
+python -m pip install 'setuptools==80.9.0'
+python -m pip install --no-build-isolation -r requirements-go2-isaaclab.txt
 python -m pip check
 ```
 
@@ -131,7 +136,7 @@ python -m pip check
 HUNTER 원본/교정 모델, 검증 결과, 비교·교정 근거 문서는 유지한다.
 
 - `.conda/isaacsim-5.0`: 실제 설치 환경. 실행에 필요하다.
-- `.cache`: 다운로드/컴파일 캐시 (확인 시 약 1.7 GiB). 실제 환경과 별개이며 이번에 삭제하지 않았다.
+- `.cache`: 다운로드/컴파일 캐시. 실제 환경과 별개다.
 - `.runtime`: 실행 설정·로그·Kit 데이터 (약 284 MiB). 기존 설정을 이어 쓰기 위해 유지했다.
 - `logs`: 설치/실행 기록 (약 92 KiB).
 

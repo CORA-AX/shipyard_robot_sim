@@ -1,0 +1,20 @@
+{
+  "isaaclab": {
+    "repository": "https://github.com/CORA-AX/IsaacLab.git",
+    "upstream": "https://github.com/isaac-sim/IsaacLab.git",
+    "tag": "v2.2.1",
+    "commit": "0f00ca2b4b2d54d5f90006a92abb1b00a72b2f20",
+    "local_path": "third_party/IsaacLab",
+    "seed_repository": "/home/rodix-gpu/IsaacLab"
+  },
+  "model": {
+    "url": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/5.0/Isaac/IsaacLab/Robots/Unitree/Go2/go2.usd",
+    "storage": "Remote USD and its dependencies; requires network access on first load."
+  },
+  "policy": {
+    "url": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/5.0/Isaac/IsaacLab/PretrainedCheckpoints/rsl_rl/Isaac-Velocity-Flat-Unitree-Go2-v0/checkpoint.pt",
+    "path": "assets/go2/policies/flat.pt",
+    "sha256": "47ccb2046ec3064257997f879c62d64217b937713c30d827883b2c2f40c50439",
+    "bytes": 983322
+  }
+}

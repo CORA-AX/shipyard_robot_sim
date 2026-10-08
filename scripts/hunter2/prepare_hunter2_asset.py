@@ -9,7 +9,7 @@ import shutil
 import subprocess
 import sys
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 ASSET = ROOT / 'assets/hunter2'
 VENDOR = ROOT / 'third_party/ugv_gazebo_sim/hunter/hunter2_base'
 STEERING = ('front_steer_left_joint', 'front_steer_right_joint')

@@ -1,0 +1,12 @@
+# Run from the project root in .conda/isaacsim-5.0 after initializing Isaac Lab v2.2.1.
+# Install setuptools==80.9.0 before using --no-build-isolation (flatdict uses pkg_resources).
+-c requirements-isaacsim.lock.txt
+-e third_party/IsaacLab/source/isaaclab
+-e third_party/IsaacLab/source/isaaclab_assets
+-e third_party/IsaacLab/source/isaaclab_tasks
+-e third_party/IsaacLab/source/isaaclab_rl[rsl-rl]
+packaging==23.0
+setuptools==80.9.0
+wheel==0.45.1
+transformers==4.57.6
+warp-lang==1.7.1

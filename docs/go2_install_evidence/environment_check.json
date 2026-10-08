@@ -1,0 +1,16 @@
+{
+  "checked_date": "2026-10-08",
+  "source_environment_unchanged": true,
+  "baseline_changes": {
+    "setuptools": {
+      "original": "84.0.0",
+      "go2": "80.9.0"
+    }
+  },
+  "go2_package_count": 230,
+  "duplicate_distribution_metadata": false,
+  "wheel_code_matches_metadata": true,
+  "isaaclab_tag": "v2.2.1",
+  "isaaclab_commit": "0f00ca2b4b2d54d5f90006a92abb1b00a72b2f20",
+  "pip_check": "No broken requirements found."
+}

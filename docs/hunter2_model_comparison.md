@@ -50,7 +50,7 @@ Driver는 `hunter_base/include/hunter_base/hunter_params.hpp`의 **HunterV2Param
 현재 모델은 `assets/hunter2/source/hunter2_sim.urdf`이며 별도 열로 비교했다.
 
 ```bash
-python3 scripts/compare_hunter2_models.py --output-dir docs/hunter2_comparison_evidence
+python3 scripts/hunter2/compare_hunter2_models.py --output-dir docs/hunter2_comparison_evidence
 python3 -m unittest discover -s tests -v
 ```
 
@@ -431,7 +431,7 @@ E=근거 부족 가정. 상세 diff는 각 변경 필드에 primary class 한 �
 
 ## 13. Current 모델 patch proposal — 적용하지 않음
 
-작업 위치는 vendor가 아니라 파생 생성기 `scripts/prepare_hunter2_asset.py`와 그 검증이다.
+작업 위치는 vendor가 아니라 파생 생성기 `scripts/hunter2/prepare_hunter2_asset.py`와 그 검증이다.
 현재 joint 이름을 유지해도 LCAS의 구조적 개선을 반영할 수 있다.
 
 1. `front_steer_left_joint`의 axis `0 0 1` → `0 1 0`.

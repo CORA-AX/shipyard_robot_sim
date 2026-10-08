@@ -1,0 +1,12 @@
+[submodule "third_party/IsaacLab"]
+	path = third_party/IsaacLab
+	url = https://github.com/CORA-AX/IsaacLab.git
+[submodule "third_party/ugv_gazebo_sim"]
+	path = third_party/ugv_gazebo_sim
+	url = https://github.com/CORA-AX/ugv_gazebo_sim.git
+[submodule "third_party/hunter_ros2_reference"]
+	path = third_party/hunter_ros2_reference
+	url = https://github.com/CORA-AX/hunter_ros2.git
+[submodule "third_party/hunter_robot"]
+	path = third_party/hunter_robot
+	url = https://github.com/CORA-AX/hunter_robot.git

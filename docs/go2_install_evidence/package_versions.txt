@@ -1,6 +1,4 @@
-# Unified Isaac Sim / Isaac Lab Python distributions, 2026-10-08 (230 packages).
-# Version constraints, not a hash lock. CUDA wheels use https://download.pytorch.org/whl/cu128.
-# Isaac packages use https://pypi.nvidia.com; Isaac Lab is installed editable from pinned source.
+# Validated Go2 environment constraints; version inventory, not a hash lock.
 absl-py==2.5.0
 aiodns==3.1.1
 aiofiles==23.2.1

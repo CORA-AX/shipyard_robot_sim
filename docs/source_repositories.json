@@ -1,0 +1,33 @@
+{
+  "organization": "CORA-AX",
+  "repositories": [
+    {
+      "path": "third_party/IsaacLab",
+      "repository": "https://github.com/CORA-AX/IsaacLab.git",
+      "upstream": "https://github.com/isaac-sim/IsaacLab.git",
+      "commit": "0f00ca2b4b2d54d5f90006a92abb1b00a72b2f20",
+      "role": "Go2 simulation and policy execution; Isaac Lab v2.2.1"
+    },
+    {
+      "path": "third_party/ugv_gazebo_sim",
+      "repository": "https://github.com/CORA-AX/ugv_gazebo_sim.git",
+      "upstream": "https://github.com/agilexrobotics/ugv_gazebo_sim.git",
+      "commit": "27633a956c845903ee630538afeb17fe70afdd84",
+      "role": "Original Hunter URDF and meshes"
+    },
+    {
+      "path": "third_party/hunter_ros2_reference",
+      "repository": "https://github.com/CORA-AX/hunter_ros2.git",
+      "upstream": "https://github.com/agilexrobotics/hunter_ros2.git",
+      "commit": "7bb146dd40fcea757b3516292319aa14ace41577",
+      "role": "Official Hunter geometry and limit reference"
+    },
+    {
+      "path": "third_party/hunter_robot",
+      "repository": "https://github.com/CORA-AX/hunter_robot.git",
+      "upstream": "https://github.com/LCAS/hunter_robot.git",
+      "commit": "e073b273674459a13ec57b8731d06ddc8770546f",
+      "role": "Hunter model comparison reference"
+    }
+  ]
+}

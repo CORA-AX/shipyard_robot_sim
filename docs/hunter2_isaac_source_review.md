@@ -18,8 +18,8 @@
 재현:
 
 ```bash
-python3 scripts/review_hunter2_kinematics.py
-python3 scripts/validate_hunter2_asset.py
+python3 scripts/hunter2/review_hunter2_kinematics.py
+python3 scripts/hunter2/validate_hunter2_asset.py
 ```
 
 [계산 JSON](hunter2_kinematic_review.json)에 대상 URDF/xacro SHA-256과 수치를 저장했다.

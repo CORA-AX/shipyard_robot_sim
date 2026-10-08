@@ -5,7 +5,7 @@ import sys
 import unittest
 import xml.etree.ElementTree as ET
 
-sys.path.insert(0,str(Path(__file__).resolve().parents[1]/'scripts'))
+sys.path.insert(0,str(Path(__file__).resolve().parents[1]/'scripts'/'hunter2'))
 from compare_hunter2_models import LCAS, RestrictedXacro, safe_expr, topology, point, turning, mesh_triangles
 
 

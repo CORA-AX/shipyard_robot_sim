@@ -1,0 +1,20 @@
+{
+  "environment": "/home/rodix-gpu/shipyard_robot_sim/.conda/isaacsim-5.0",
+  "package_count": 230,
+  "pip_check": "No broken requirements found.",
+  "matches_tested_clone_versions": true,
+  "existing_package_changes": {
+    "setuptools": {
+      "before": "84.0.0",
+      "after": "80.9.0"
+    }
+  },
+  "isaaclab_source": "/home/rodix-gpu/shipyard_robot_sim/third_party/IsaacLab",
+  "clone_removal": "completed",
+  "active_project_environments": [
+    ".conda/isaacsim-5.0"
+  ],
+  "cuda_check": "passed",
+  "go2_500_steps": "passed",
+  "kit_physx_urdf_smoke": "passed"
+}

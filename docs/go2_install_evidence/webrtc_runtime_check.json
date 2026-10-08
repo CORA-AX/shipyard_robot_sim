@@ -1,0 +1,160 @@
+{
+  "passed": true,
+  "task": "Isaac-Velocity-Flat-Unitree-Go2-Play-v0",
+  "environment": "/home/rodix-gpu/shipyard_robot_sim/.conda/isaacsim-5.0",
+  "python_executable": "/home/rodix-gpu/shipyard_robot_sim/.conda/isaacsim-5.0/bin/python",
+  "isaaclab_commit": "0f00ca2b4b2d54d5f90006a92abb1b00a72b2f20",
+  "checkpoint_sha256": "47ccb2046ec3064257997f879c62d64217b937713c30d827883b2c2f40c50439",
+  "versions": {
+    "isaacsim": "5.0.0.0",
+    "isaaclab": "0.45.9",
+    "torch": "2.7.0+cu128",
+    "rsl-rl-lib": "2.3.3"
+  },
+  "gpu": "NVIDIA GeForce RTX 3090",
+  "steps": 500,
+  "simulated_seconds": 10.0,
+  "commanded_forward_m_s": 0.4,
+  "mean_forward_m_s": 0.24957915282528848,
+  "start_position": [
+    0.0,
+    0.0,
+    0.4000000059604645
+  ],
+  "end_position": [
+    2.4849419593811035,
+    -0.029691504314541817,
+    0.153621643781662
+  ],
+  "forward_displacement_m": 2.4849419593811035,
+  "minimum_base_height_m": 0.153621643781662,
+  "resets": 0,
+  "joint_names": [
+    "FL_hip_joint",
+    "FR_hip_joint",
+    "RL_hip_joint",
+    "RR_hip_joint",
+    "FL_thigh_joint",
+    "FR_thigh_joint",
+    "RL_thigh_joint",
+    "RR_thigh_joint",
+    "FL_calf_joint",
+    "FR_calf_joint",
+    "RL_calf_joint",
+    "RR_calf_joint"
+  ],
+  "samples": [
+    {
+      "step": 50,
+      "position": [
+        0.2110137790441513,
+        -0.03177192062139511,
+        0.17985689640045166
+      ],
+      "forward_m_s": 0.3014772832393646
+    },
+    {
+      "step": 100,
+      "position": [
+        0.46920135617256165,
+        -0.013835029676556587,
+        0.16449569165706635
+      ],
+      "forward_m_s": 0.23001129925251007
+    },
+    {
+      "step": 150,
+      "position": [
+        0.7334581613540649,
+        -0.0086246682330966,
+        0.16522899270057678
+      ],
+      "forward_m_s": 0.23684881627559662
+    },
+    {
+      "step": 200,
+      "position": [
+        0.9803652763366699,
+        0.0025506759993731976,
+        0.16304679214954376
+      ],
+      "forward_m_s": 0.2479388415813446
+    },
+    {
+      "step": 250,
+      "position": [
+        1.2335309982299805,
+        0.006516860332340002,
+        0.16534142196178436
+      ],
+      "forward_m_s": 0.32652121782302856
+    },
+    {
+      "step": 300,
+      "position": [
+        1.4772669076919556,
+        -0.0027544847689568996,
+        0.1617652028799057
+      ],
+      "forward_m_s": 0.17960476875305176
+    },
+    {
+      "step": 350,
+      "position": [
+        1.723191261291504,
+        0.0008083987049758434,
+        0.1639988273382187
+      ],
+      "forward_m_s": 0.24394066631793976
+    },
+    {
+      "step": 400,
+      "position": [
+        1.9782772064208984,
+        -0.011704370379447937,
+        0.16229908168315887
+      ],
+      "forward_m_s": 0.23272687196731567
+    },
+    {
+      "step": 450,
+      "position": [
+        2.2204396724700928,
+        -0.005872267764061689,
+        0.16711357235908508
+      ],
+      "forward_m_s": 0.3153360188007355
+    },
+    {
+      "step": 500,
+      "position": [
+        2.4849419593811035,
+        -0.029691504314541817,
+        0.153621643781662
+      ],
+      "forward_m_s": 0.2587144076824188
+    }
+  ],
+  "experience": "isaacsim.exp.full.streaming.kit",
+  "sync_material_loads": false,
+  "sync_usd_loads": "enabled after AppLauncher initialization",
+  "create_new_stage": false,
+  "view_initialization_verified": true,
+  "view_ready_seconds": 44.625,
+  "duplicate_port_guard": true,
+  "child_process_cleanup_verified": true,
+  "client_video_verified": false,
+  "policy_export_validation": {
+    "torchscript_inference": true,
+    "onnx_model_check": true,
+    "onnx_reference_output_matches_torchscript": true,
+    "observation_shape": [
+      1,
+      48
+    ],
+    "action_shape": [
+      1,
+      12
+    ]
+  }
+}

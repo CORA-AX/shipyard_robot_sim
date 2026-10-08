@@ -8,7 +8,7 @@ from pathlib import Path
 import struct
 import xml.etree.ElementTree as ET
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 SOURCE = ROOT / 'assets/hunter2/source'
 VENDOR = ROOT / 'third_party/ugv_gazebo_sim/hunter/hunter2_base'
 

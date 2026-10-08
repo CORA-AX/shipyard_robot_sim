@@ -69,8 +69,8 @@ CAN motor mapping은 후륜 traction을 뒷받침한다. 실제 구동·접촉 �
 프로젝트 루트에서 실행한다. Python 3.10+ 표준 라이브러리와 Git만 필요하다.
 
 ```bash
-python3 scripts/prepare_hunter2_asset.py
-python3 scripts/validate_hunter2_asset.py
+python3 scripts/hunter2/prepare_hunter2_asset.py
+python3 scripts/hunter2/validate_hunter2_asset.py
 python3 -m unittest discover -s tests -v
 ```
 
@@ -81,7 +81,7 @@ python3 -m unittest discover -s tests -v
 URDF와 meshes 폴더를 함께 옮겨 다음으로 경로 이동성을 확인할 수 있다.
 
 ```bash
-python3 scripts/validate_hunter2_asset.py /path/to/copied/source/hunter2_sim.urdf --structural-only
+python3 scripts/hunter2/validate_hunter2_asset.py /path/to/copied/source/hunter2_sim.urdf --structural-only
 ```
 
 `--structural-only`는 vendor provenance 검사를 생략하며 조향/ownership 검사는 유지한다.

@@ -9,7 +9,7 @@ Isaac Sim import, USD 생성, 접촉/주행 검증 및 controller 구현은 아�
 
 입력: `assets/hunter2/source/original/hunter2_base.urdf`와 고정 vendor.
 출력: [hunter2_sim.urdf](../assets/hunter2/source/hunter2_sim.urdf).
-생성 규칙은 [prepare_hunter2_asset.py](../scripts/prepare_hunter2_asset.py)에 반영했다.
+생성 규칙은 [prepare_hunter2_asset.py](../scripts/hunter2/prepare_hunter2_asset.py)에 반영했다.
 
 | 항목 | 교정 전 | 교정 후 |
 |---|---|---|
@@ -39,7 +39,7 @@ LCAS의 DAE, ros2_control, controller, 1:1 mimic 및 질량값은 복사하지 �
 
 ## 어떻게 검증했나
 
-[validate_hunter2_asset.py](../scripts/validate_hunter2_asset.py)는 조향축 문제를
+[validate_hunter2_asset.py](../scripts/hunter2/validate_hunter2_asset.py)는 조향축 문제를
 경고로 넘기던 기존 동작을 수정해 다음 조건을 필수 검사한다.
 
 1. 모든 부모 joint의 origin 회전을 누적하고, 조향축이 base의 +Z를 향하는지 검사한다.
@@ -89,11 +89,11 @@ LCAS의 DAE, ros2_control, controller, 1:1 mimic 및 질량값은 복사하지 �
 프로젝트 루트에서 실행한다. source 재생성은 아래 명령을 사용한다.
 
 ```bash
-python3 scripts/prepare_hunter2_asset.py
-python3 scripts/validate_hunter2_asset.py
+python3 scripts/hunter2/prepare_hunter2_asset.py
+python3 scripts/hunter2/validate_hunter2_asset.py
 python3 -m unittest discover -s tests -v
-python3 scripts/compare_hunter2_models.py --output-dir docs/hunter2_source_correction_evidence/comparison
-python3 scripts/review_hunter2_kinematics.py
+python3 scripts/hunter2/compare_hunter2_models.py --output-dir docs/hunter2_source_correction_evidence/comparison
+python3 scripts/hunter2/review_hunter2_kinematics.py
 ```
 
 - [현재 source 검사 결과](../assets/hunter2/config/validation_report.json)

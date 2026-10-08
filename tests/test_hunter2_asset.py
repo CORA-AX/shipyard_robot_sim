@@ -8,7 +8,7 @@ import tempfile
 import unittest
 import xml.etree.ElementTree as ET
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'scripts'))
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'scripts' / 'hunter2'))
 from prepare_hunter2_asset import ASSET, VENDOR, STEERING, STEERING_LINKS, derived_bytes
 from validate_hunter2_asset import validate
 

@@ -1,0 +1,64 @@
+{
+  "passed": true,
+  "task": "Isaac-Velocity-Flat-Unitree-Go2-Play-v0",
+  "isaaclab_commit": "0f00ca2b4b2d54d5f90006a92abb1b00a72b2f20",
+  "checkpoint_sha256": "47ccb2046ec3064257997f879c62d64217b937713c30d827883b2c2f40c50439",
+  "versions": {
+    "isaacsim": "5.0.0.0",
+    "isaaclab": "0.45.9",
+    "torch": "2.7.0+cu128",
+    "rsl-rl-lib": "2.3.3"
+  },
+  "gpu": "NVIDIA GeForce RTX 3090",
+  "steps": 100,
+  "simulated_seconds": 2.0,
+  "commanded_forward_m_s": 0.4,
+  "mean_forward_m_s": 0.24123056040611118,
+  "start_position": [
+    0.0,
+    0.0,
+    0.4000000059604645
+  ],
+  "end_position": [
+    0.46920135617256165,
+    -0.013835029676556587,
+    0.16449569165706635
+  ],
+  "forward_displacement_m": 0.46920135617256165,
+  "minimum_base_height_m": 0.16122108697891235,
+  "resets": 0,
+  "joint_names": [
+    "FL_hip_joint",
+    "FR_hip_joint",
+    "RL_hip_joint",
+    "RR_hip_joint",
+    "FL_thigh_joint",
+    "FR_thigh_joint",
+    "RL_thigh_joint",
+    "RR_thigh_joint",
+    "FL_calf_joint",
+    "FR_calf_joint",
+    "RL_calf_joint",
+    "RR_calf_joint"
+  ],
+  "samples": [
+    {
+      "step": 50,
+      "position": [
+        0.2110137790441513,
+        -0.03177192062139511,
+        0.17985689640045166
+      ],
+      "forward_m_s": 0.3014772832393646
+    },
+    {
+      "step": 100,
+      "position": [
+        0.46920135617256165,
+        -0.013835029676556587,
+        0.16449569165706635
+      ],
+      "forward_m_s": 0.23001129925251007
+    }
+  ]
+}
