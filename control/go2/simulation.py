@@ -1,7 +1,7 @@
 """Viewer-owned Go2 simulation controlled by a separate local policy process."""
 import time
 
-from control.control_channel import ControlServer, ProtocolError, vector
+from control.control_channel import ControlServer, vector
 from .policy import CONTRACT, JOINT_NAMES
 
 
@@ -32,18 +32,22 @@ def run_controlled(app, args, report):
                       minimum_base_height_m=float(robot.data.root_pos_w[0, 2]),
                       paused_frames=0, pause_state_unchanged=True, transitions=[])
         def configure(command):
-            vx = vector([command.get('vx')], 1)[0]
-            if not 0.2 <= vx <= 0.8:
-                raise ProtocolError('Go2 forward speed must be between 0.2 and 0.8 m/s.')
+            values = vector([command.get('vx'), command.get('vy', 0.0), command.get('wz', 0.0)], 3)
+            vx, vy, wz = values
             term = env.command_manager.get_term('base_velocity')
             # Keep the target across command resampling and episode resets.
-            term.cfg.ranges.lin_vel_x = (vx, vx)
-            term.vel_command_b[:, 0] = vx
-            term.vel_command_b[:, 1:] = 0.0
+            for name, value in zip(('lin_vel_x', 'lin_vel_y', 'ang_vel_z'), values):
+                setattr(term.cfg.ranges, name, (value, value))
+            term.vel_command_b[:] = torch.tensor([values], device=env.device)
             report['commanded_forward_m_s'] = vx
-            report.setdefault('command_history', []).append({'step': step, 'vx': vx})
+            report['commanded_velocity'] = values
+            history = report.setdefault('command_history', [])
+            if not history or history[-1]['command'] != values:
+                history.append({'step': step, 'vx': vx, 'command': values})
+                report['command_history'] = history[-1000:]
 
         server.on_configure = configure
+        server.on_command = configure
         step = episode = 0
         was_paused = None
         paused_state = None
@@ -60,9 +64,9 @@ def run_controlled(app, args, report):
                 message = {'step': step, 'episode': episode, 'contract': CONTRACT,
                            'action_size': 12, 'joint_names': JOINT_NAMES, 'step_dt': env.step_dt,
                            'observation': obs[0].tolist(), 'state': state}
-                configured = server.configured
+                previous_command = report.get('commanded_velocity')
                 action = server.poll(message) if tick >= next_step_time else None
-                if server.configured and not configured:
+                if report.get('commanded_velocity') != previous_command:
                     obs = env.observation_manager.compute()['policy']
                     report['command_history'][-1]['policy_command'] = obs[0, 9:12].tolist()
 

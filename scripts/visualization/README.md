@@ -9,9 +9,9 @@
 | `runtime.py` | 프로젝트 캐시·Kit 설정, 프레임 간 대기 |
 
 ```bash
-python scripts/viewer.py --scenario shipyard --no-webrtc
+python scripts/viewer.py --scenario warehouse --no-webrtc
 python scripts/viewer.py --scenario flat --no-webrtc
-python scripts/viewer.py --scenario shipyard --webrtc --server-ip 192.168.1.149
+python scripts/viewer.py --scenario warehouse --webrtc --server-ip 192.168.1.149
 ```
 
 공통 Conda 환경 `.conda/isaacsim-5.0`에서 실행한다.
@@ -29,7 +29,7 @@ Go2는 viewer가 생성하고 별도 제어기가 정책을 실행한다.
 
 ```bash
 # 터미널 1
-python scripts/viewer.py --scenario shipyard --robot go2 --no-webrtc
+python scripts/viewer.py --scenario warehouse --robot go2 --no-webrtc
 # 터미널 2
 python scripts/go2/control.py
 ```

@@ -4,21 +4,25 @@
 
 - `config/robot_cfg.py`: 로봇 초기 자세와 모터 설정.
 - 루트 `scenarios/flat/go2_env_cfg.py`: 평지 환경의 센서·관측·액션·리셋 정의.
-- 루트 `scenarios/shipyard/scene_cfg.py`: 모든 로봇에 공유할 화물 상자·지면·카메라 설정.
-- 루트 `scenarios/shipyard/go2_env_cfg.py`: 공통 환경과 Go2 연결.
+- 루트 `scenarios/warehouse/scene_cfg.py`: 모든 로봇에 공유할 warehouse USD·시작 위치·카메라 설정.
+- 루트 `scenarios/warehouse/go2_env_cfg.py`: 공통 환경과 Go2 연결.
 - 루트 `scenarios/registry.py`: 공통 장면과 Go2 환경 등록.
 - `config/sources.lock.json`: Isaac Lab commit, 원격 USD URL, 정책 출처와 SHA-256.
 - `policies/flat.pt`: `python scripts/go2/prepare_go2_policy.py`로 복원하는 공식 정책.
-- `policies/tracking_v2_10000.pt`: 평가 후 기본 제어 정책으로 선택한 학습 체크포인트 복사본.
-  원본은 `rl/rsl_rl/go2_flat_tracking/2026-10-13_00-34-53_tracking_4gpu/model_10000.pt`다.
-  manifest의 `control_policy`에 파일·SHA-256·출처·선택 근거를 기록한다.
+- `policies/upstream_flat_6800.pt`: 현재 기본 제어 정책.
+  Zhefan-Xu/isaac-go2-ros2의 `ckpts/unitree_go2/flat_model_6800.pt`와 동일한 파일이다.
+  manifest의 `control_policy`에 원본 commit·다운로드 URL·SHA-256을 기록한다.
+  `python scripts/go2/prepare_go2_policy.py --control-policy`로 다운로드·검증한다.
+- `policies/trot_v4_4000.pt`: 이전 기본 제어 모델의 로컬 복사본.
+  원본은 `rl/rsl_rl/go2_flat_tracking/2026-10-13_15-30-50_trot_v4_fresh/model_4000.pt`다.
+- `policies/tracking_v2_10000.pt`: 이전 기본 제어 모델의 로컬 복사본.
 - 로봇 USD와 참조 mesh는 NVIDIA 서버에서 로드하며, 이 폴더에는 전체 모델을 복제하지 않았다.
 
 프로젝트 루트에서 공통 Conda 환경 `.conda/isaacsim-5.0`을 활성화한 뒤 실행한다.
 
 ```bash
 # 터미널 1
-python scripts/viewer.py --scenario shipyard --robot go2 --webrtc --server-ip 192.168.1.149
+python scripts/viewer.py --scenario warehouse --robot go2 --webrtc --server-ip 192.168.1.149
 # 터미널 2
 python scripts/go2/control.py
 ```
@@ -27,7 +31,7 @@ viewer가 로봇·환경·물리를 담당하고 제어기는 체크포인트 Ac
 정책 네트워크 구성은 `control/go2/policy.py`에서 관리한다. 평지 정책은 장애물 회피를 수행하지 않는다.
 `--checkpoint`로 다른 모델을 선택할 수 있다. 공식 정책은 `prepare_go2_policy.py`로 준비한 뒤
 `python scripts/go2/control.py --checkpoint assets/go2/policies/flat.pt`로 실행한다.
-정책 `.pt` 파일은 Git에서 제외된다. 기본 학습 정책을 복원할 때는 위 학습 원본을 해당 경로로 복사한다.
+정책 `.pt` 파일은 Git에서 제외된다. 기본 제어 정책은 `prepare_go2_policy.py --control-policy`로 복원한다.
 [설치 안내](../../docs/go2_setup.md)와 [분리 실행 안내](../../docs/viewer_control.md)를 참고한다.
 
 로봇·정책 기본 설정은 Isaac Lab v2.2.1의 BSD-3-Clause 코드에서 가져왔다.

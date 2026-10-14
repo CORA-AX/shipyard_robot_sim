@@ -47,10 +47,11 @@ def vector(values, size):
 
 class ControlServer:
     """Nonblocking local server. poll() accepts only the current request's action."""
-    def __init__(self, port, robot_id, *, timeout=2.0, on_configure=None):
+    def __init__(self, port, robot_id, *, timeout=2.0, on_configure=None, on_command=None):
         if timeout <= 0:
             raise ValueError('Control timeout must be positive.')
         self.on_configure = on_configure
+        self.on_command = on_command
         self.configured = False
         self.robot_id = robot_id
         self.timeout = timeout
@@ -117,6 +118,7 @@ class ControlServer:
                                 'type': 'observation' if self.configured else 'hello'}
                 if not self.configured:
                     self.pending.pop('observation', None)
+                    self.pending['runtime_commands'] = self.on_command is not None
                 self.output = encode(self.pending)
                 self.deadline = time.monotonic() + self.timeout
             if time.monotonic() > self.deadline:
@@ -156,6 +158,10 @@ class ControlServer:
             if message.get('type') != 'action':
                 raise ProtocolError('Expected action or pause.')
             actions = vector(message.get('actions'), self.pending['action_size'])
+            if 'command' in message:
+                if not isinstance(message['command'], dict) or self.on_command is None:
+                    raise ProtocolError('Runtime command updates are not supported.')
+                self.on_command(message['command'])
             self.pending = None
             return actions
         except (OSError, ConnectionError, ProtocolError, ValueError) as exc:

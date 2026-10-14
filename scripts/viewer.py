@@ -8,7 +8,7 @@ import sys
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / 'scripts'))
-from scenarios.registry import SCENARIOS, load_scene
+from scenarios.registry import DEFAULT_SCENARIO, SCENARIOS, load_scene
 from visualization.runtime import FramePacer, kit_arguments, prepare_environment
 from visualization.launcher import add_display_arguments, launch_display
 
@@ -29,7 +29,7 @@ def validate_robot_arguments(parser, args):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--scenario', choices=SCENARIOS, default='shipyard')
+    parser.add_argument('--scenario', choices=SCENARIOS, default=DEFAULT_SCENARIO)
     parser.add_argument('--device', default='cuda:0')
     parser.add_argument('--steps', type=int, default=0, help='Scene frames or applied robot control steps; 0 runs until stopped.')
     parser.add_argument('--report', type=Path)
@@ -63,7 +63,7 @@ def run_viewer():
     prepare_environment(ROOT, 'scenario_viewer')
     from isaaclab.app import AppLauncher
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--scenario', choices=SCENARIOS, default='shipyard')
+    parser.add_argument('--scenario', choices=SCENARIOS, default=DEFAULT_SCENARIO)
     parser.add_argument('--steps', type=int, default=0)
     parser.add_argument('--report', type=Path)
     add_robot_arguments(parser)
@@ -103,11 +103,15 @@ def run_viewer():
         entities = []
         terrain = getattr(cfg, 'terrain', None)
         if terrain is not None:
-            if terrain.terrain_type != 'plane':
-                raise ValueError('Static viewer currently supports plane terrain; use a background USD asset for other terrain.')
-            ground = sim.CuboidCfg(
-                size=(100.0, 100.0, 0.02), visual_material=terrain.visual_material)
-            ground.func(terrain.prim_path, ground, translation=(0.0, 0.0, -0.01))
+            if terrain.terrain_type == 'usd':
+                ground = sim.UsdFileCfg(usd_path=terrain.usd_path)
+                ground.func(terrain.prim_path + '/terrain', ground)
+            elif terrain.terrain_type == 'plane':
+                ground = sim.CuboidCfg(
+                    size=(100.0, 100.0, 0.02), visual_material=terrain.visual_material)
+                ground.func(terrain.prim_path, ground, translation=(0.0, 0.0, -0.01))
+            else:
+                raise ValueError('Static viewer supports plane and USD terrains.')
             entities.append('terrain')
         for name, asset in vars(cfg).items():
             if isinstance(asset, ArticulationCfg):

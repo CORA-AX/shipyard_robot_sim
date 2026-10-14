@@ -2,11 +2,14 @@
 
 전체 명령 옵션·기본값·실행 예시는 [커맨드 옵션 안내](command_options.md)를 참고한다.
 
-Isaac Sim 5.0 + Isaac Lab v2.2.1 기반 조선소 로봇 시뮬레이션 프로젝트다.
+Isaac Sim 5.0 + Isaac Lab v2.2.1 기반 로봇 시뮬레이션 프로젝트다.
+기본 실험 환경은 원본 isaac-go2-ros2의 NVIDIA Simple Warehouse를 이식한 `warehouse`다.
+[warehouse 자산 출처·시작 위치·실행 안내](assets/environments/warehouse/README.md)를 참고한다.
 현재 Go2 한 대의 환경 표시·정책 제어를 지원한다. Hunter2는 자산 준비·정적 검증 단계이며
 여러 로봇의 동시 실행은 아직 구현하지 않았다.
 
-**viewer가 환경·로봇·물리를 관리하고, 별도 control 프로세스가 정책을 실행한다.**
+기본 분리 실행에서는 **viewer가 환경·로봇·물리를 관리하고, 별도 control 프로세스가 정책을 실행한다.**
+ROS 직접 제어는 `scripts/go2/ros.py`가 정책과 물리를 함께 실행한다.
 명령은 모두 프로젝트 루트에서 실행한다. 공통 Conda 환경은 `.conda/isaacsim-5.0`이다.
 Isaac Lab은 `third_party/IsaacLab`을 사용한다.
 
@@ -20,7 +23,12 @@ source /home/rodix-gpu/miniforge3/etc/profile.d/conda.sh
 conda activate "$PWD/.conda/isaacsim-5.0"
 ```
 
-기본 제어 모델은 `assets/go2/policies/tracking_v2_10000.pt`다.
+기본 제어 모델은 `assets/go2/policies/upstream_flat_6800.pt`다.
+Zhefan-Xu/isaac-go2-ros2의 `flat_model_6800.pt`를 사용한다. 다운로드·체크섬 검증은 다음 명령으로 실행한다.
+
+```bash
+python scripts/go2/prepare_go2_policy.py --control-policy
+```
 기존 공식 정책을 사용할 때는 먼저 다운로드·체크섬 확인을 실행한다.
 
 ```bash
@@ -31,7 +39,7 @@ python scripts/go2/prepare_go2_policy.py
 
 | 목적 | viewer 옵션 |
 |---|---|
-| 조선소 환경만 표시 | `--scenario shipyard` |
+| 창고 환경만 표시 | `--scenario warehouse` |
 | 평지 환경만 표시 | `--scenario flat` |
 | 환경에 Go2 추가 | `--robot go2` |
 | 서버 로컬 화면 | `--no-webrtc` (기본값) |
@@ -39,13 +47,13 @@ python scripts/go2/prepare_go2_policy.py
 
 ```bash
 # 환경만 표시
-python scripts/viewer.py --scenario shipyard --no-webrtc
+python scripts/viewer.py --scenario warehouse --no-webrtc
 
 # 환경 + Go2 표시: 로컬 창
-python scripts/viewer.py --scenario shipyard --robot go2 --no-webrtc
+python scripts/viewer.py --scenario warehouse --robot go2 --no-webrtc
 
 # 환경 + Go2 표시: WebRTC + headless
-python scripts/viewer.py --scenario shipyard --robot go2 \
+python scripts/viewer.py --scenario warehouse --robot go2 \
   --webrtc --server-ip 192.168.1.149
 ```
 
@@ -67,8 +75,8 @@ python scripts/go2/control.py --vx 0.4
 
 제어기는 기본 CPU에서 정책을 추론하고 `127.0.0.1:8765`로 viewer에 연결한다.
 정책 추론 장치는 `--device cuda:0`으로 변경할 수 있다. 정책은 장애물 회피를 수행하지 않는다.
-기본 모델은 학습·평가 후 선택한 `tracking_v2_10000.pt`다. 고정 명령 8개에서 리셋 0회를 확인했고,
-공식 평지 0.4m/s 평가에서 평균 vx=0.430m/s, 몸체 높이=0.294m였다.
+기본 모델은 Zhefan-Xu/isaac-go2-ros2의 `flat_model_6800.pt`이며,
+프로젝트에서는 `upstream_flat_6800.pt`라는 이름으로 보관한다.
 `--checkpoint 경로`로 다른 모델을 지정한다. 실제 모델 경로·iteration은 `GO2_POLICY_LOADED`에 출력된다.
 [모델 선택·제어 실행 안내](docs/viewer_control.md)를 참고한다.
 제어기에서 Ctrl+C를 누르면 물리를 멈추고 viewer 화면은 유지한다.
@@ -79,7 +87,7 @@ python scripts/go2/control.py --vx 0.4
 
 ```bash
 # 터미널 1: 총 500개 액션 적용 후 종료
-python scripts/viewer.py --scenario shipyard --robot go2 --no-webrtc \
+python scripts/viewer.py --scenario warehouse --robot go2 --no-webrtc \
   --steps 500 --report .runtime/go2/viewer_control.json
 
 # 터미널 2: 500스텝 정책 실행 및 적용 확인
@@ -103,6 +111,89 @@ viewer를 무제한 실행하고 제어기에만 `--steps 500`을 주면 500스�
 `passed`는 실행·통신 완료 결과다. 보행 성능은 보고서의 거리·높이·리셋 횟수로 확인한다.
 현재 자동 보행 합격 판정과 정책 export 기능은 제공하지 않는다.
 상세 통신·재접속 동작은 [viewer와 control 사용 안내](docs/viewer_control.md)를 참고한다.
+
+## ROS로 Go2 직접 제어
+
+`scripts/go2/ros.py`는 시뮬레이션과 선택된 정책을 한 프로세스에서 실행한다.
+ROS 명령으로 직접 제어하는 독립 실행 경로이며 기본 모델은 `upstream_flat_6800.pt`다.
+공통 Conda 환경을 활성화한 뒤 실행한다.
+
+```bash
+# 터미널 1: 창고 + Go2 + ROS, 로컬 화면
+python scripts/go2/ros.py --scenario warehouse
+
+# 화면 없이 실행하려면
+python scripts/go2/ros.py --scenario flat --headless
+
+# WebRTC 화면으로 실행하려면
+python scripts/go2/ros.py --scenario warehouse --webrtc --server-ip 192.168.1.149
+```
+
+위 명령 중 하나를 실행하고 `GO2_ROS_READY`를 기다린다. 두 번째 터미널에서도
+같은 Conda 환경을 활성화한 뒤 명령을 보낸다. 아래 도구는 Isaac Sim의 내장
+Humble 라이브러리를 사용하므로 별도 시스템 ROS 설치가 필요하지 않다.
+
+```bash
+# 전진 5초; 완료 시 정지 명령 전송
+python scripts/go2/ros_command.py --vx 0.4 --duration 5
+
+# 제자리 회전 / 횡이동 / 정지
+python scripts/go2/ros_command.py --wz 0.5
+python scripts/go2/ros_command.py --vy 0.3
+python scripts/go2/ros_command.py
+```
+
+외부 ROS 2 Humble 노드에서도 `/unitree_go2/cmd_vel`에 `geometry_msgs/msg/Twist`를
+발행할 수 있다. `linear.x`, `linear.y`는 로봇 몸체 좌표의 m/s,
+`angular.z`는 rad/s다. 세 축의 명령 속도에는 상한을 적용하지 않으며, NaN/무한대 입력은 거부한다.
+명령은 20Hz 정도로 반복 발행한다. 0.5초 동안 유효한 명령이 없으면 목표 속도를
+0으로 바꾸고 정책·물리는 계속 실행한다. `/clock`은 물리가 진행한 시간을 50Hz로
+발행한다. ROS 도구의 `use_sim_time`을 켜면 이 시간을 사용한다.
+
+```bash
+# 별도로 설치된 ROS Humble 터미널에서 실행하는 예
+ros2 topic pub -r 20 /unitree_go2/cmd_vel geometry_msgs/msg/Twist \
+  '{linear: {x: 0.4}, angular: {z: 0.0}}'
+ros2 topic echo /clock
+```
+
+`--ros-domain-id`의 기본값은 `ROS_DOMAIN_ID`, 미설정 시 0이다. 외부 노드도 같은
+domain을 사용해야 한다. 원격 노드는 DDS 통신이 가능한 네트워크에 있어야 한다.
+같은 domain에는 `/clock` 발행 시뮬레이터를 하나만 실행한다.
+전체 옵션·검사 명령은 [커맨드 옵션 안내](command_options.md#ros-go2-독립-실행)를 참고한다.
+
+## 키보드 이동
+
+세 실행기에서 `--keyboard`로 실행한 터미널에 포커스를 두고 조작한다.
+
+```bash
+# viewer를 실행한 뒤 별도 control 터미널에서 조작
+python scripts/go2/control.py --keyboard
+
+# 시뮬레이션·정책을 한 프로세스에서 실행하고 같은 터미널에서 조작
+python scripts/go2/ros.py --scenario warehouse --keyboard
+
+# ros.py를 일반 ROS 모드로 실행한 뒤 별도 터미널에서 cmd_vel 발행
+python scripts/go2/ros_command.py --keyboard
+```
+
+| 키 | 동작 |
+|---|---|
+| W / S 또는 ↑ / ↓ | 전진 / 후진 |
+| A / D 또는 ← / → | 왼쪽 / 오른쪽 횡이동 |
+| Z / C | 왼쪽 / 오른쪽 회전 |
+| Space / X | 즉시 목표 속도 0 |
+| Q / Ctrl+C | 실행기 종료 |
+
+키를 누르고 있으면 OS의 반복 입력으로 이동을 유지한다. 마지막 유효한 키 입력 후
+0.6초가 지나면 목표 속도가 0이 된다. 기본 이동 속도는 1.5m/s, 회전은 1.5rad/s다.
+`--keyboard-speed`, `--keyboard-turn-speed`, `--keyboard-timeout`으로 변경한다.
+이동·회전 속도 옵션은 유한한 0 이상의 값을 받으며 상한은 없다. 공통 기본값은
+`control/go2/keyboard.py`의 `DEFAULT_KEYBOARD_SPEED`, `DEFAULT_KEYBOARD_TURN_SPEED`에서 수정한다.
+`ros_command.py --keyboard`는 Q 또는 Ctrl+C까지 실행하고 종료 시 정지 명령을 발행한다.
+`ros.py --keyboard`는 터미널 입력으로 직접 제어하며 `/clock`을 발행한다.
+별도 ROS 송신기에서 조작하려면 `ros.py`를 일반 ROS 모드로 실행한다.
+SSH에서는 TTY를 할당한다 (`ssh -t`). `control.py --keyboard` 사용 전에는 viewer도 재시작한다.
 
 ## Go2 PPO 학습 결과
 
@@ -152,7 +243,7 @@ python rl/go2/train.py --task Shipyard-Go2-Flat-Tracking-v0 \
 | `third_party/` | submodule로 연결한 외부 소스 |
 | `.runtime/`, `.cache/`, `.conda/` | 로컬 실행 결과·캐시·가상환경 |
 
-장애물 위치·크기·카메라는 `scenarios/shipyard/scene_cfg.py`, Go2 모터 설정은
+warehouse 자산·시작 위치·카메라는 `scenarios/warehouse/scene_cfg.py`, Go2 모터 설정은
 `assets/go2/config/robot_cfg.py`, 정책 추론은 `control/go2/policy.py`를 수정한다.
 로봇 추가 절차는 [담당자용 개발 안내](docs/developer_guide.md)를 참고한다.
 
@@ -270,7 +361,7 @@ python tests/smoke_test_isaacsim.py
 
 첫 번째 스크립트는 Python 3.11, 프로젝트 환경 경로, 주요 패키지, CUDA tensor 연산을 검사한다.
 두 번째 스크립트는 headless Kit 실행, URDF importer 명령, 큐브 낙하를 통한 PhysX 동작을 확인한다.
-기본 학습 정책이 없으면 학습 원본을 `assets/go2/policies/tracking_v2_10000.pt`로 복사한다.
+기본 제어 정책은 `python scripts/go2/prepare_go2_policy.py --control-policy`로 준비한다.
 공식 정책을 사용할 때는 `python scripts/go2/prepare_go2_policy.py`로 준비하고
 제어기에 `--checkpoint assets/go2/policies/flat.pt`를 지정한다.
 Isaac Sim 첫 실행 시에는 NVIDIA 라이선스 동의 안내에 직접 응답해야 한다.

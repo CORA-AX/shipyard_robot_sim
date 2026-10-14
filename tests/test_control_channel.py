@@ -123,3 +123,29 @@ class ChannelChecks(unittest.TestCase):
         self.assertIsNone(self.server.peer)
         self.assertFalse(self.server.configured)
         self.assertEqual(self.server.rejections, 1)
+
+    def test_runtime_command_is_applied_with_valid_action(self):
+        updates = []
+        self.server.on_command = updates.append
+        command = {'vx': 0.0, 'vy': .4, 'wz': -.5}
+        self.client.sendall(self.reply(command=command))
+        self.assertEqual(self.server.poll(self.obs), [.1] * 12)
+        self.assertEqual(updates, [command])
+        self.assertEqual(self.commands, [{'vx': .4}])
+
+    def test_invalid_action_cannot_apply_runtime_command(self):
+        updates = []
+        self.server.on_command = updates.append
+        self.client.sendall(self.reply(actions=[.1] * 11, command={'vx': .8}))
+        self.assertIsNone(self.server.poll(self.obs))
+        self.assertEqual(updates, [])
+        self.assertIsNone(self.server.peer)
+
+    def test_rejected_runtime_command_cannot_apply_action(self):
+        def reject(command):
+            raise ProtocolError('Invalid runtime velocity')
+        self.server.on_command = reject
+        self.client.sendall(self.reply(command={'vx': 9.0}))
+        self.assertIsNone(self.server.poll(self.obs))
+        self.assertIsNone(self.server.peer)
+        self.assertEqual(self.server.rejections, 1)

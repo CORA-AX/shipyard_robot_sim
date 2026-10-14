@@ -2,7 +2,7 @@
 
 전체 명령 옵션·기본값·실행 예시는 [커맨드 옵션 안내](command_options.md)를 참고한다.
 
-현재 코드 기준: 2026-10-08. 목표는 여러 로봇이 하나의 조선소 장면과 물리 시간을 공유하는 것이다.
+현재 코드 기준: 2026-10-14. 목표는 여러 로봇이 하나의 창고 장면과 물리 시간을 공유하는 것이다.
 현재 viewer·별도 제어기 분리 실행을 지원하며, 다중 로봇 실행기와 공통 목표·상태 adapter는 아직 구현하지 않았다.
 
 ## 폴더별 책임
@@ -12,7 +12,7 @@ assets/
   go2/config/                  로봇·모터 설정, 출처 기록
   go2/policies/                로컬 체크포인트 (Git 제외)
   hunter2/                     기존 URDF·mesh·USD·차량 설정
-  environments/shipyard/       향후 공통 배경 USD·지도·재질 (현재 README만 있음)
+  environments/warehouse/      NVIDIA warehouse 자산 URL·버전·출처 기록
 control/
   control_channel.py           viewer·제어기 간 로컬 통신과 응답 검사
   go2/policy.py                별도 프로세스용 정책 추론 (PyTorch)
@@ -25,8 +25,8 @@ scenarios/
   common/scene_cfg.py          공통 지면·조명
   flat/scene_cfg.py            로봇 없는 평지 장면
   flat/go2_env_cfg.py          Go2 기본 관측·액션·명령·리셋·종료 조건
-  shipyard/scene_cfg.py        공통 조선소 장애물·카메라
-  shipyard/go2_env_cfg.py      조선소 장면과 Go2 로봇·센서 연결
+  warehouse/scene_cfg.py        공통 warehouse USD·카메라
+  warehouse/go2_env_cfg.py      창고 장면과 Go2 로봇·센서 연결
 scripts/
   viewer.py                    환경 표시·Go2 소환, 로컬/WebRTC 선택
   go2/control.py               viewer에 연결하는 별도 정책 제어기
@@ -44,11 +44,11 @@ URDF는 로봇 원본, USD는 Isaac Sim 자산, Python은 장면 구성·제어 
 
 | 변경하려는 내용 | 수정 위치 |
 |---|---|
-| 장애물 위치·크기·색상, 조선소 카메라 | `scenarios/shipyard/scene_cfg.py` |
+| warehouse USD·시작 위치·카메라 | `scenarios/warehouse/scene_cfg.py` |
 | 공통 지면·조명 | `scenarios/common/scene_cfg.py` |
 | Go2 관절 기본값·모터 게인·제한 | `assets/go2/config/robot_cfg.py` |
 | Go2 관측·액션·리셋·명령 | `scenarios/flat/go2_env_cfg.py` |
-| 조선소에 Go2·센서 연결 | `scenarios/shipyard/go2_env_cfg.py` |
+| 창고에 Go2·센서 연결 | `scenarios/warehouse/go2_env_cfg.py` |
 | 분리 실행의 정책 추론 | `control/go2/policy.py`, `scripts/go2/control.py` |
 | 분리 실행의 물리 루프·연결 | `control/go2/simulation.py`, `control/control_channel.py` |
 | 화면·WebRTC 처리 | `scripts/visualization/launcher.py`, `runtime.py` |
@@ -112,29 +112,29 @@ export PUBLIC_IP=192.168.1.149
 
 ```bash
 # 로컬 창
-python scripts/viewer.py --scenario shipyard --no-webrtc
+python scripts/viewer.py --scenario warehouse --no-webrtc
 python scripts/viewer.py --scenario flat --no-webrtc
 
 # WebRTC + headless
-python scripts/viewer.py --scenario shipyard --webrtc --server-ip "$PUBLIC_IP"
+python scripts/viewer.py --scenario warehouse --webrtc --server-ip "$PUBLIC_IP"
 
 # 30프레임 실행 후 종료·결과 기록
-python scripts/viewer.py --scenario shipyard --webrtc --server-ip "$PUBLIC_IP" \
-  --steps 30 --report .runtime/scenario_viewer/shipyard_check.json
+python scripts/viewer.py --scenario warehouse --webrtc --server-ip "$PUBLIC_IP" \
+  --steps 30 --report .runtime/scenario_viewer/warehouse_check.json
 ```
 
-viewer 기본값은 `shipyard`, 로컬 창, 종료할 때까지 표시다.
+viewer 기본값은 `warehouse`, 로컬 창, 종료할 때까지 표시다.
 `--steps`는 렌더링 프레임 수이며 `0`은 무제한이다.
 준비 완료 로그는 `SCENARIO_VIEW_READY`다. 보고서는 `--report`를 지정한 경우에만 저장한다.
 로봇을 지정하지 않은 viewer는 정적 배치 미리보기이며 물리 시간이 진행하지 않는다.
-현재 plane 지면과 spawn 설정이 있는 장면 자산을 지원하며 정적 장면 정의에 로봇 articulation을 직접 넣으면 거부한다. `--robot go2`는 별도 동적 환경을 생성한다.
+현재 plane·USD 지면과 spawn 설정이 있는 장면 자산을 지원하며 정적 장면 정의에 로봇 articulation을 직접 넣으면 거부한다. `--robot go2`는 별도 동적 환경을 생성한다.
 주행 검증은 Go2 viewer와 별도 제어기를 연결해 수행한다.
 
 ## Viewer + 별도 제어 프로세스
 
 ```bash
 # 터미널 1
-python scripts/viewer.py --scenario shipyard --robot go2 --no-webrtc
+python scripts/viewer.py --scenario warehouse --robot go2 --no-webrtc
 # 터미널 2
 python scripts/go2/control.py --robot-id go2 --vx 0.4
 ```
@@ -148,7 +148,7 @@ python scripts/go2/control.py --robot-id go2 --vx 0.4
 
 ```bash
 # 터미널 1: 500개 액션을 적용한 후 종료
-python scripts/viewer.py --scenario shipyard --robot go2 --no-webrtc \
+python scripts/viewer.py --scenario warehouse --robot go2 --no-webrtc \
   --steps 500 --report .runtime/go2/viewer_control.json
 
 # 터미널 2: 정책 실행 및 적용 확인
@@ -213,8 +213,10 @@ python scripts/go2/control.py --help
 
 단위 테스트의 로컬 소켓·프로세스 검사는 OS 권한이 필요하며 GPU 시뮬레이션을 대체하지 않는다.
 제어기 속도 설정 프로토콜 반영 후 단위 테스트 45개가 통과했다. 별도 제어 통신 테스트는 `tests/test_control_channel.py`에 있다. Go2 구조 이동 후 500스텝 2.48m 전진·리셋 0회를 확인했다.
-단일 viewer 진입점 정리 후 shipyard WebRTC 10프레임 실행을 확인했다.
-이전 viewer 단계에서 flat 로컬 창과 shipyard WebRTC 각각 30프레임을 완료했다.
 실제 원격 클라이언트의 영상 수신은 별도 확인이 필요하다.
+
+기본 환경을 warehouse로 대체한 후 ROS 900스텝 보행·회전·정지·clock과 리셋 0회를 확인했다.
+`tests/check_warehouse.py --headless`로 바닥·벽 충돌, 시작 위치 여유 공간, 리셋 재현성을 검사한다.
+warehouse는 USD에 고정된 배치를 사용하며 실험 seed는 42다.
 
 새 컴퓨터 재현·정책 호환성과 상세 기록은 [Go2 설치 및 검증 안내](go2_setup.md)를 참고한다.
