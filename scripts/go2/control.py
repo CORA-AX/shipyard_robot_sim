@@ -19,6 +19,8 @@ def main():
     parser.add_argument('--control-port', type=int, default=8765)
     parser.add_argument('--vx', type=float, default=0.4, help='Forward velocity command, 0.2 to 0.8 m/s.')
     parser.add_argument('--device', default='cpu', help='Policy inference device; independent of viewer GPU.')
+    parser.add_argument('--checkpoint', type=Path,
+                        help='Override the selected control checkpoint; defaults to the project manifest.')
     parser.add_argument('--steps', type=int, default=0, help='Applied control steps; 0 runs until stopped.')
     parser.add_argument('--connect-timeout', type=float, default=180.0)
     parser.add_argument('--response-timeout', type=float, default=30.0)
@@ -30,7 +32,10 @@ def main():
     report = {'passed': False, 'robot_id': args.robot_id, 'applied_steps': 0, 'commanded_forward_m_s': args.vx}
     sock = None
     try:
-        policy = FlatPolicy(ROOT, args.device)
+        policy = FlatPolicy(ROOT, args.device, checkpoint=args.checkpoint)
+        report['policy'] = {'path': str(policy.checkpoint_path), 'sha256': policy.checkpoint_sha256,
+                            'iteration': policy.iteration}
+        print('GO2_POLICY_LOADED ' + json.dumps(report['policy']), flush=True)
         deadline = time.monotonic() + args.connect_timeout
         while True:
             try:

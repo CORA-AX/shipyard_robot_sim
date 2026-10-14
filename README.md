@@ -20,7 +20,8 @@ source /home/rodix-gpu/miniforge3/etc/profile.d/conda.sh
 conda activate "$PWD/.conda/isaacsim-5.0"
 ```
 
-정책 실행 전 체크포인트를 준비한다. 이미 있으면 체크섬만 확인한다.
+기본 제어 모델은 `assets/go2/policies/tracking_v2_10000.pt`다.
+기존 공식 정책을 사용할 때는 먼저 다운로드·체크섬 확인을 실행한다.
 
 ```bash
 python scripts/go2/prepare_go2_policy.py
@@ -66,8 +67,10 @@ python scripts/go2/control.py --vx 0.4
 
 제어기는 기본 CPU에서 정책을 추론하고 `127.0.0.1:8765`로 viewer에 연결한다.
 정책 추론 장치는 `--device cuda:0`으로 변경할 수 있다. 정책은 장애물 회피를 수행하지 않는다.
-현재 사전 학습 정책은 낮은 보행 자세(몸체 기준 높이 약 0.16m)를 보인다. 정상 자세의 보행은 아직 검증되지 않았다.
-[몸체 높이 비교 검사](docs/go2_setup.md#몸체-높이-검사)를 참고한다.
+기본 모델은 학습·평가 후 선택한 `tracking_v2_10000.pt`다. 고정 명령 8개에서 리셋 0회를 확인했고,
+공식 평지 0.4m/s 평가에서 평균 vx=0.430m/s, 몸체 높이=0.294m였다.
+`--checkpoint 경로`로 다른 모델을 지정한다. 실제 모델 경로·iteration은 `GO2_POLICY_LOADED`에 출력된다.
+[모델 선택·제어 실행 안내](docs/viewer_control.md)를 참고한다.
 제어기에서 Ctrl+C를 누르면 물리를 멈추고 viewer 화면은 유지한다.
 같은 명령을 다시 실행하면 현재 상태에서 재개한다. 전체 종료는 viewer도 종료한다.
 한 Go2에 제어기 하나만 연결할 수 있으며, WebRTC viewer도 한 번에 하나씩 실행한다.
@@ -101,11 +104,44 @@ viewer를 무제한 실행하고 제어기에만 `--steps 500`을 주면 500스�
 현재 자동 보행 합격 판정과 정책 export 기능은 제공하지 않는다.
 상세 통신·재접속 동작은 [viewer와 control 사용 안내](docs/viewer_control.md)를 참고한다.
 
+## Go2 PPO 학습 결과
+
+프로젝트 루트에서 공통 Conda 환경을 활성화한 뒤 Isaac Lab의 평지 Go2 학습을 실행한다.
+
+```bash
+CUDA_VISIBLE_DEVICES=0 python third_party/IsaacLab/scripts/reinforcement_learning/rsl_rl/train.py \
+  --task Isaac-Velocity-Flat-Unitree-Go2-v0 \
+  --num_envs 32 --max_iterations 10 --headless
+```
+
+학습 로그·체크포인트·설정은 `rl/` 아래의 `rl/rsl_rl/<experiment_name>/<실행시각>/`에
+저장한다. 평지 Go2는 `rl/rsl_rl/unitree_go2_flat/`을 사용한다. `train.py --resume`과
+`play.py`의 기본 체크포인트 검색도 이 경로를 사용한다. 학습 결과는 Git에서 제외한다.
+기존 `logs/rsl_rl/`의 학습 결과는 `rl/rsl_rl/`로 이동했다.
+
+```bash
+tensorboard --logdir rl/rsl_rl/unitree_go2_flat --host 127.0.0.1 --port 6006
+```
+
+몸체 높이 유지와 제자리 회전을 포함한 cmd_vel 추종 학습은 프로젝트 task를 사용한다.
+
+```bash
+python rl/go2/train.py --task Shipyard-Go2-Flat-Tracking-v0 \
+  --num_envs 1024 --max_iterations 5000 --seed 42 --run_name trot_v4_fresh --headless
+```
+
+이 task는 높이 목표 0.28m, 강화된 속도·yaw 추종 보상과 오차 페널티,
+30% 제자리 회전 및 저속 전진·전진 회전 명령을 사용한다. 현재 v4에는 대각선 trot 타이밍 보상,
+발 미끄러짐과 0.4초를 넘는 발 공중 시간 페널티가 포함된다. 처음부터 학습하려면
+`--resume`과 체크포인트 로드 옵션을 생략한다. 결과는 `rl/rsl_rl/go2_flat_tracking/`에 저장한다.
+[보상 변경 내용·4 GPU 학습·평가 방법](rl/README.md)을 참고한다.
+
 ## 코드 수정 위치
 
 | 폴더 | 역할 |
 |---|---|
 | `assets/<robot>/` | 모델·관절·모터 설정·정책 파일·출처 |
+| `rl/` | Go2 학습 task·실행기·평가·분석과 `rsl_rl/` 실행 결과 |
 | `scenarios/` | 공통 배경·장애물·로봇 배치·관측·액션·리셋 설정 |
 | `control/<robot>/` | 로봇별 정책 추론과 viewer 내부 물리·상태 처리 |
 | `control/control_channel.py` | viewer·제어기 사이의 로컬 통신 |
@@ -234,7 +270,9 @@ python tests/smoke_test_isaacsim.py
 
 첫 번째 스크립트는 Python 3.11, 프로젝트 환경 경로, 주요 패키지, CUDA tensor 연산을 검사한다.
 두 번째 스크립트는 headless Kit 실행, URDF importer 명령, 큐브 낙하를 통한 PhysX 동작을 확인한다.
-Go2 정책이 없으면 먼저 `python scripts/go2/prepare_go2_policy.py`를 실행한다.
+기본 학습 정책이 없으면 학습 원본을 `assets/go2/policies/tracking_v2_10000.pt`로 복사한다.
+공식 정책을 사용할 때는 `python scripts/go2/prepare_go2_policy.py`로 준비하고
+제어기에 `--checkpoint assets/go2/policies/flat.pt`를 지정한다.
 Isaac Sim 첫 실행 시에는 NVIDIA 라이선스 동의 안내에 직접 응답해야 한다.
 검사 결과는 `docs/isaacsim_install_evidence/`에 기록된다. HUNTER의 USD 변환·주행 검증은 별도 작업이다.
 

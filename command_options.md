@@ -73,6 +73,7 @@ python scripts/go2/control.py [옵션]
 | `--control-port 포트` | `8765` | viewer와 같은 제어 포트, 1~65535 |
 | `--vx 속도` | `0.4`m/s | Go2 목표 전진 속도, 0.2~0.8m/s. 연결 시 viewer에 전달 |
 | `--device 장치` | `cpu` | 정책 추론 장치. `cpu`, `cuda:0` 등. viewer 장치와 독립적 |
+| `--checkpoint 경로` | manifest의 `control_policy` | 추론할 체크포인트 지정. 현재 기본은 `tracking_v2_10000.pt` |
 | `--steps N` | `0` | 이번 연결에서 적용이 확인된 액션 수. 0 이상, `0`은 무제한 |
 | `--connect-timeout 초` | `180.0` | 연결 시도 제한 시간과 연결 후 첫 관측의 수신 대기 제한 시간에 각각 사용. 양수 |
 | `--response-timeout 초` | `30.0` | 첫 메시지 이후 다음 관측·완료 메시지 수신 제한 시간. 양수 |
@@ -87,7 +88,10 @@ viewer에서 선택한 로봇을 제어하며, 제어기 자체가 시뮬레이�
 python scripts/go2/control.py --vx 0.4
 python scripts/go2/control.py --device cuda:0
 python scripts/go2/control.py --vx 0.4 --steps 500 --report .runtime/go2/control.json
+python scripts/go2/control.py --checkpoint assets/go2/policies/flat.pt --vx 0.4
 ```
+
+실제 모델 경로·SHA-256·iteration은 시작 로그 `GO2_POLICY_LOADED`와 결과 JSON의 `policy`에서 확인한다.
 
 Ctrl+C로 제어기를 종료하면 viewer는 화면을 유지하고 물리를 멈춘다.
 다시 실행하면 현재 상태에서 재개한다. viewer의 `--steps`는 누적 스텝이고 제어기의
@@ -189,3 +193,48 @@ python3 -m unittest discover -s tests -p 'test_control_channel.py' -v
 설치 검사 두 스크립트에는 사용자 옵션이 없다 (`--help`도 구현하지 않음).
 GPU·설치 검사 결과는 `docs/isaacsim_install_evidence/`에 저장된다.
 단위 테스트 명령의 `-s`는 검색 폴더, `-p`는 테스트 파일 패턴, `-v`는 상세 출력이다.
+
+## 10. Go2 평지 PPO tracking 학습·재생
+
+```bash
+python rl/go2/train.py --task Shipyard-Go2-Flat-Tracking-v0 \
+  --num_envs 1024 --max_iterations 300 --seed 42 --run_name tracking --headless
+python rl/go2/play.py --task Shipyard-Go2-Flat-Tracking-Play-v0 \
+  --num_envs 16 --checkpoint /절대경로/model_299.pt
+```
+
+두 실행기는 프로젝트 task를 등록하고 Isaac Lab RSL-RL 실행기에 인자를 전달한다.
+전체 옵션은 각각 `--help`로 확인한다. 공통 Isaac Sim Conda 환경에서 실행한다.
+
+| 옵션 | 역할 |
+|---|---|
+| `--task` | tracking 학습 또는 PLAY task 선택 |
+| `--num_envs` | 프로세스당 병렬 환경 수; 분산 학습에서는 GPU당 환경 수 |
+| `--max_iterations` | PPO 학습 iteration 수 |
+| `--seed` | 난수 seed |
+| `--run_name` | 실행 폴더 이름에 붙이는 식별자 |
+| `--headless` | 로컬 창 없이 실행 |
+| `--distributed` | torch.distributed.run으로 띄운 여러 GPU 학습에 사용 |
+| `--checkpoint` | 재생할 학습 체크포인트 경로 |
+
+로그·모델은 `rl/rsl_rl/go2_flat_tracking/`에 저장된다.
+
+현재 tracking v4는 대각선 trot 보상, 발 미끄러짐과 장시간 발 들기 페널티를 포함한다.
+4 GPU로 처음부터 학습하는 명령은 [학습 안내](rl/README.md)를 참고한다.
+처음부터 학습할 때는 `--resume`, `--load_run`, `--checkpoint`를 생략한다.
+
+고정 명령에서 추종과 발 접촉을 평가하려면 다음 명령을 사용한다.
+
+```bash
+python rl/go2/evaluate.py \
+  --checkpoint assets/go2/policies/tracking_v2_10000.pt \
+  --case forward_04 --num_envs 16 --steps 1600 --seed 42 \
+  --output rl/rsl_rl/go2_gait_eval/baseline_forward_04.json --headless
+```
+
+`--case`는 전진(`forward_02/04/08`), 정지(`stand`), 회전(`yaw_05/yaw_neg_05`),
+전진 회전(`forward_turn`), 후진(`backward_04`), 횡이동(`lateral_04`)을 선택한다.
+`--steps`는 policy step 수(기본 1,600 = 32초), `--warmup-steps`는 시작·리셋 후 제외 구간
+(기본 100 = 2초)이다. `--output`과 같은 이름으로 JSON 통계, NPZ 원시 데이터,
+PNG 발 접촉 타임라인을 저장한다. 전체 옵션은 `python rl/go2/evaluate.py --help`로 확인한다.
+[보상 설정·4 GPU 실행·검증 안내](rl/README.md)를 참고한다.

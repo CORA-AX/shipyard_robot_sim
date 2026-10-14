@@ -9,12 +9,14 @@
 - 루트 `scenarios/registry.py`: 공통 장면과 Go2 환경 등록.
 - `config/sources.lock.json`: Isaac Lab commit, 원격 USD URL, 정책 출처와 SHA-256.
 - `policies/flat.pt`: `python scripts/go2/prepare_go2_policy.py`로 복원하는 공식 정책.
+- `policies/tracking_v2_10000.pt`: 평가 후 기본 제어 정책으로 선택한 학습 체크포인트 복사본.
+  원본은 `rl/rsl_rl/go2_flat_tracking/2026-10-13_00-34-53_tracking_4gpu/model_10000.pt`다.
+  manifest의 `control_policy`에 파일·SHA-256·출처·선택 근거를 기록한다.
 - 로봇 USD와 참조 mesh는 NVIDIA 서버에서 로드하며, 이 폴더에는 전체 모델을 복제하지 않았다.
 
 프로젝트 루트에서 공통 Conda 환경 `.conda/isaacsim-5.0`을 활성화한 뒤 실행한다.
 
 ```bash
-python scripts/go2/prepare_go2_policy.py
 # 터미널 1
 python scripts/viewer.py --scenario shipyard --robot go2 --webrtc --server-ip 192.168.1.149
 # 터미널 2
@@ -23,6 +25,9 @@ python scripts/go2/control.py
 
 viewer가 로봇·환경·물리를 담당하고 제어기는 체크포인트 Actor를 추론한다.
 정책 네트워크 구성은 `control/go2/policy.py`에서 관리한다. 평지 정책은 장애물 회피를 수행하지 않는다.
+`--checkpoint`로 다른 모델을 선택할 수 있다. 공식 정책은 `prepare_go2_policy.py`로 준비한 뒤
+`python scripts/go2/control.py --checkpoint assets/go2/policies/flat.pt`로 실행한다.
+정책 `.pt` 파일은 Git에서 제외된다. 기본 학습 정책을 복원할 때는 위 학습 원본을 해당 경로로 복사한다.
 [설치 안내](../../docs/go2_setup.md)와 [분리 실행 안내](../../docs/viewer_control.md)를 참고한다.
 
 로봇·정책 기본 설정은 Isaac Lab v2.2.1의 BSD-3-Clause 코드에서 가져왔다.

@@ -31,6 +31,10 @@ Go2 환경 설정도 모두 이 폴더에서 관리한다. `flat/go2_env_cfg.py`
 
 Go2 정책 추론과 viewer 내부 물리 루프는 `control/go2/`, 사용자 실행 명령은 `scripts/go2/`에 둔다.
 
+`../rl/go2/tasks/flat_tracking/`은 높이 유지·속도 추종·제자리 회전·대각선 trot을 학습하는 별도 Isaac Lab task다.
+`rl/go2/train.py`와 `rl/go2/play.py`로 실행한다.
+[보상·명령 설정과 학습 방법](../rl/README.md)을 참고한다.
+
 전체 구조와 실행 명령은 [로봇 담당자 안내](../docs/developer_guide.md)를 참고한다.
 
 Viewer가 Go2를 생성하고 별도 `scripts/go2/control.py`가 정책을 실행한다.

@@ -4,6 +4,7 @@ __pycache__/
 .cache/
 .runtime/
 logs/
+/rl/rsl_rl/
 outputs/
 assets/go2/policies/*.pt
 assets/go2/policies/exported/

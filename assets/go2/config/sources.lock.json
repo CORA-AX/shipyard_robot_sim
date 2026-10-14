@@ -16,5 +16,18 @@
     "path": "assets/go2/policies/flat.pt",
     "sha256": "47ccb2046ec3064257997f879c62d64217b937713c30d827883b2c2f40c50439",
     "bytes": 983322
+  },
+  "control_policy": {
+    "name": "tracking_v2_10000",
+    "path": "assets/go2/policies/tracking_v2_10000.pt",
+    "sha256": "f1a7059cc8ad65a7ac31f952a1f4777bfdd06af7e3da2e7325e19e77744a52f2",
+    "bytes": 983935,
+    "iteration": 10000,
+    "source_checkpoint": "rl/rsl_rl/go2_flat_tracking/2026-10-13_00-34-53_tracking_4gpu/model_10000.pt",
+    "task": "Shipyard-Go2-Flat-Tracking-v0",
+    "contract": "go2-flat-48x12-v1",
+    "empirical_normalization": false,
+    "selection_report": "rl/rsl_rl/go2_flat_tracking/2026-10-13_00-34-53_tracking_4gpu/analysis/control_policy_selection.md",
+    "selected_on": "2026-10-13"
   }
 }

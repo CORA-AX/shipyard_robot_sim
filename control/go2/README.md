@@ -1,6 +1,7 @@
 # Go2 제어·시뮬레이션
 
 - `policy.py`: Isaac Sim 없이 PyTorch로 체크포인트 Actor 로딩·추론.
+  기본 모델은 자산 manifest의 `control_policy`를 사용하고 `control.py --checkpoint`로 바꾼다.
 - `simulation.py`: viewer 내부 환경 생성·관측·액션 적용·물리 진행·대기 렌더링·상태 기록.
 - 공통 `../control_channel.py`: 로컬 제어 연결·세션·스텝·메시지 검사.
 
