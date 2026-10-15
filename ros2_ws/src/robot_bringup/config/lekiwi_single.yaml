@@ -1,0 +1,9 @@
+world:
+  scenario: warehouse
+  seed: 42
+robots:
+  - id: lekiwi_0
+    type: lekiwi
+    namespace: lekiwi_0
+    position: [0.0, 0.0, 0.04]
+    yaw: 0.0

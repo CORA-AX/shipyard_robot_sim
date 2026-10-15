@@ -2,8 +2,9 @@
 
 전체 명령 옵션·기본값·실행 예시는 [커맨드 옵션 안내](command_options.md)를 참고한다.
 
-현재 코드 기준: 2026-10-14. 목표는 여러 로봇이 하나의 창고 장면과 물리 시간을 공유하는 것이다.
-현재 viewer·별도 제어기 분리 실행을 지원하며, 다중 로봇 실행기와 공통 목표·상태 adapter는 아직 구현하지 않았다.
+현재 코드 기준: 2026-10-15. ROS workspace에서 Go2와 Lekiwi가 하나의 창고 장면과 물리 시간을 공유한다.
+기존 viewer·별도 제어기 분리 실행도 유지한다. 단일 선택 PD waypoint를 제공하며
+경로 계획과 상위 플래너는 후속 단계다.
 
 ## 폴더별 책임
 
@@ -49,28 +50,50 @@ URDF는 로봇 원본, USD는 Isaac Sim 자산, Python은 장면 구성·제어 
 | Go2 관절 기본값·모터 게인·제한 | `assets/go2/config/robot_cfg.py` |
 | Go2 관측·액션·리셋·명령 | `scenarios/flat/go2_env_cfg.py` |
 | 창고에 Go2·센서 연결 | `scenarios/warehouse/go2_env_cfg.py` |
-| 분리 실행의 정책 추론 | `control/go2/policy.py`, `scripts/go2/control.py` |
+| 정책 추론·분리 실행 진입점 | `ros2_ws/src/robot_control/robot_control/go2/policy.py`, `scripts/go2/control.py` |
 | 분리 실행의 물리 루프·연결 | `control/go2/simulation.py`, `control/control_channel.py` |
 | 화면·WebRTC 처리 | `scripts/visualization/launcher.py`, `runtime.py` |
 
 Go2 평지 장면은 기본 환경 정의에 지면 설정도 포함한다. 공통 지면을 변경할 때 평지 설정과도 비교한다.
 
-## 향후 시뮬레이션 실행 계층
+## 공통 ROS 시뮬레이션 실행 계층
 
-루트 `simulation/`은 환경 생성·물리 진행·렌더링 실행부를 분리하기 위한 빈 폴더다.
-현재 Go2 실행 코드는 `control/go2/simulation.py`에 유지하며 viewer의 호출 경로도 그대로다.
+공통 실행부는 `ros2_ws/src/robot_sim/robot_sim/multi_runtime.py`다.
+`scene.py`가 articulation을 생성하고 선택한 로봇만 리셋한다. 제어기는 물리를 진행하지 않는다.
+Go2는 `robot_control/go2/controller.py`의 `ArticulationGo2Controller`, Lekiwi는
+`robot_control/lekiwi/controller.py`를 사용한다. clock은 `SimulationClock` 하나가 소유한다.
+공통 실행은 로봇별 ROS bridge와 `/reset` 서비스를 연결하며 기존 단독 실행은 호환 경로를 유지한다.
+루트 `simulation/`은 현재 실행 경로가 아니다.
 
-다음 정리 단계에서는 해당 파일을 `simulation/go2.py`로 이동하는 정도로 시작한다.
-다른 로봇이 준비되면 실제 공통 부분을 확인해 하나의 물리 실행 루프와 로봇별 adapter로 확장한다.
-지금은 공통 runner·adapter 인터페이스·다른 로봇용 파일을 구현하지 않는다.
-빈 폴더에는 파일을 추가하지 않았으므로 Git에는 기록되지 않는다.
+RViz 표시는 `robot_bringup/rviz_launch.py`와 `rviz_view.py`가 담당한다.
+`simulation.launch.py`는 Isaac의 `display`와 별도로 `rviz_display`를 해석하며,
+`rviz.launch.py`는 실행 중인 시뮬레이터에 RViz만 연결한다.
+원격 화면 도구는 `ros2_ws/setup_rviz_web.sh`로 `.runtime/rviz_web/sysroot`에 설치한다.
+원격 세션마다 Xvfb display와 Xauthority를 따로 만들고, openbox·x11vnc·websockify·RViz를
+감독한다. VNC/HTTP는 loopback에만 바인딩하고 SSH 터널로 접속한다.
+종료 시 세션에서 생성한 프로세스 그룹만 정리한다. 로컬 모드는 기존 데스크톱을 사용한다.
+RViz는 시스템 Humble/Qt/Mesa 환경을 사용하며 Isaac의 Conda·내장 ROS 환경과 섞지 않는다.
+`config/robots.rviz`와 robots_file로 odom 표시 및 공통 `/waypoint/goal_pose` 입력을 구성한다.
+`use_sim_time=true`, Fixed Frame `map`이며 제어 대상은 RViz와 별도인 waypoint 노드가 선택한다.
+
+PD의 ROS 진입점은 `robot_control/nodes/waypoint.py`, 계산은 `robot_control/waypoint.py`다.
+터미널 Space로 선택을 바꿀 때 모든 목표와 명령을 지우고 이전 로봇의 정지를 확인한다.
+정지 확인 중 받은 새 목표는 보관하고, 확인 후 현재 선택 로봇에만 적용한다.
+로봇별 원본 odom·속도 필터·게인·명령 상태를 분리하고 최종 cmd_vel은 이 노드가 소유한다.
+다른 cmd_vel 발행자가 발견되면 오류로 종료한다. 수동/자동 명령 mux는 아직 제공하지 않는다.
+world/map 위치 오차와 측정 속도에 PD를 적용하고, 몸체 기준 cmd_vel로 변환한다.
+sim 시간으로 가속도 제한·도착 유지 시간을 계산하고 monotonic 시간으로 odom 수신 중단을 검사한다.
+원본 odom에는 RViz Odometry 표시의 Position/Angle Tolerance가 적용되지 않는다.
+simulator의 실제 리셋은 `reset_count`로 알리고, 선택된 로봇의 목표를 취소한다.
+시계 역행·위치 순간 이동도 감지해 이전 목표가 자동 재개되지 않도록 한다.
+선택·목표 상태는 `/waypoint/status`, `/waypoint/selected_robot`, `/waypoint/markers`로 표시한다.
 
 ## 실행 환경 준비
 
 아래 명령은 모두 프로젝트 루트에서 실행한다. 경로는 현재 서버 기준이다.
 
 ```bash
-cd /home/rodix-gpu/shipyard_robot_sim
+cd /path/to/robot_sim
 source /home/rodix-gpu/miniforge3/etc/profile.d/conda.sh
 conda activate "$PWD/.conda/isaacsim-5.0"
 ```
@@ -220,3 +243,15 @@ python scripts/go2/control.py --help
 warehouse는 USD에 고정된 배치를 사용하며 실험 seed는 42다.
 
 새 컴퓨터 재현·정책 호환성과 상세 기록은 [Go2 설치 및 검증 안내](go2_setup.md)를 참고한다.
+
+ROS workspace의 공통 실행기는 `robot_sim/launcher.py`다. 기존 `scripts/go2/ros.py`는
+호환 진입점이며 bootstrap이 한 대는 기존 type별 실행부, 여러 대는 공통 실행부를 선택한다.
+Lekiwi의 `robot_sim/lekiwi_scene.py`는 원본 USD를 참조한 stage에만 물리 보정을 적용한다.
+물리는 0.005초씩 직접 진행하고, 제어/상태 발행은 4개 물리 스텝마다 수행한다.
+렌더링은 물리 진행과 분리해 GUI/WebRTC에서 50Hz로 호출한다.
+
+다중 배치의 시작 위치·namespace는 `ros2_ws/src/robot_bringup/config/go2_lekiwi.yaml`에서 설정한다.
+공통 실행부의 Go2 리셋 조건은 바닥 기준 높이 0.12m 미만 또는 projected gravity z > -0.5다.
+Lekiwi 높이 기준은 0.015m다. 수동 리셋은 `std_srvs/Trigger`로 다음 제어 경계에 예약하며
+선택한 로봇의 명령·이력만 지우고 clock 및 다른 articulation은 유지한다.
+접촉 모니터는 GPU solver의 robot-to-robot force matrix를 사용하고 바닥을 필터에서 제외한다.

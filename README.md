@@ -1,12 +1,13 @@
-# Shipyard robot simulation
+# Warehouse robot simulation
 
 전체 명령 옵션·기본값·실행 예시는 [커맨드 옵션 안내](command_options.md)를 참고한다.
 
 Isaac Sim 5.0 + Isaac Lab v2.2.1 기반 로봇 시뮬레이션 프로젝트다.
 기본 실험 환경은 원본 isaac-go2-ros2의 NVIDIA Simple Warehouse를 이식한 `warehouse`다.
 [warehouse 자산 출처·시작 위치·실행 안내](assets/environments/warehouse/README.md)를 참고한다.
-현재 Go2 한 대의 환경 표시·정책 제어를 지원한다. Hunter2는 자산 준비·정적 검증 단계이며
-여러 로봇의 동시 실행은 아직 구현하지 않았다.
+현재 Go2 정책 제어, Lekiwi 이동 베이스 제어 및 ROS workspace의 공통 warehouse에서
+Go2+Lekiwi 동시 제어와 단일 선택 PD waypoint 추종을 지원한다.
+Hunter2 제어와 경로 계획·상위 플래너는 후속 단계다.
 
 기본 분리 실행에서는 **viewer가 환경·로봇·물리를 관리하고, 별도 control 프로세스가 정책을 실행한다.**
 ROS 직접 제어는 `scripts/go2/ros.py`가 정책과 물리를 함께 실행한다.
@@ -18,7 +19,7 @@ Isaac Lab은 `third_party/IsaacLab`을 사용한다.
 사용할 터미널마다 환경을 활성화한다. 다른 컴퓨터에서는 프로젝트·Conda 경로를 바꾼다.
 
 ```bash
-cd /home/rodix-gpu/shipyard_robot_sim
+cd /path/to/robot_sim
 source /home/rodix-gpu/miniforge3/etc/profile.d/conda.sh
 conda activate "$PWD/.conda/isaacsim-5.0"
 ```
@@ -112,6 +113,66 @@ viewer를 무제한 실행하고 제어기에만 `--steps 500`을 주면 500스�
 현재 자동 보행 합격 판정과 정책 export 기능은 제공하지 않는다.
 상세 통신·재접속 동작은 [viewer와 control 사용 안내](docs/viewer_control.md)를 참고한다.
 
+## ROS workspace로 로봇 제어
+
+시스템 Humble와 Isaac Sim의 Python 환경을 분리해 실행하는 workspace 경로를 제공한다.
+현재 `robot_control`, `robot_sim`, `robot_bringup`을 구현했으며 Go2/Lekiwi 단독과 동시 실행을 지원한다.
+
+```bash
+# 프로젝트 루트, 터미널 1
+bash ros2_ws/build.sh
+source /opt/ros/humble/setup.bash
+source ros2_ws/install/setup.bash
+ros2 launch robot_bringup simulation.launch.py
+
+# 터미널 2: 같은 ROS 환경을 source한 후
+ros2 run robot_control teleop --robot-id go2_0 --keyboard
+```
+
+명령은 `/go2_0/cmd_vel`, 상태는 `/go2_0/odom`, `/go2_0/joint_states`로 전달한다.
+base TF와 공통 `/clock`도 발행한다. `display:=headless`로 화면 없이 실행할 수 있다.
+[workspace 실행·설정·검사 안내](ros2_ws/README.md)를 참고한다.
+
+로컬 모드는 RViz 창도 함께 실행한다. WebRTC 모드는 최초 한 번
+`bash ros2_ws/setup_rviz_web.sh`로 원격 도구를 준비하면 RViz를 브라우저에서 볼 수 있다.
+이미 실행 중인 시뮬레이터에는 다음 명령으로 RViz만 연결한다.
+
+```bash
+ros2 launch robot_bringup rviz.launch.py rviz_display:=web
+# 접속 PC의 별도 터미널에서 실행
+ssh -N -L 6080:127.0.0.1:6080 rodix-gpu@192.168.1.149
+```
+
+브라우저 주소는 `http://localhost:6080/vnc.html`이다. `rviz_display:=off`로 RViz를 끌 수 있다.
+여러 로봇이면 시뮬레이터와 같은 `robots_file`을 RViz launch에도 지정한다.
+RViz의 2D Goal Pose는 공통 `/waypoint/goal_pose`를 발행한다.
+별도 터미널에서 `ros2 run robot_control waypoint`를 실행하면 기본 Go2가 추종한다.
+그 터미널에서 Space를 누르면 Lekiwi로 전환하고 새 목표를 기다린다.
+X/Esc는 목표 취소, Q/Ctrl+C는 정지 후 종료다. 기존 teleop 송신기는 종료한다.
+이 변경을 적용하려면 시뮬레이터와 RViz를 다시 실행한다.
+
+Lekiwi는 다음 설정으로 선택한다. 동일하게 `display:=webrtc server_ip:=서버_IP`를 추가할 수 있다.
+
+```bash
+# 터미널 1
+ros2 launch robot_bringup simulation.launch.py \
+  robots_file:="$PWD/ros2_ws/src/robot_bringup/config/lekiwi_single.yaml"
+
+# 터미널 2
+ros2 run robot_control teleop --robot-id lekiwi_0 --keyboard \
+  --keyboard-speed 0.2 --keyboard-turn-speed 0.5
+```
+
+Lekiwi 팔은 고정한다. 두 로봇을 함께 실행하려면 다음 배치 파일을 사용한다.
+
+```bash
+ros2 launch robot_bringup simulation.launch.py \
+  robots_file:="$PWD/ros2_ws/src/robot_bringup/config/go2_lekiwi.yaml"
+```
+
+별도 터미널에서 각 robot-id로 teleop를 실행한다. `/go2_0/reset`, `/lekiwi_0/reset`
+서비스로 선택한 로봇만 리셋할 수 있으며 공통 `/clock`과 다른 로봇은 계속 진행한다.
+
 ## ROS로 Go2 직접 제어
 
 `scripts/go2/ros.py`는 시뮬레이션과 선택된 정책을 한 프로세스에서 실행한다.
@@ -189,7 +250,7 @@ python scripts/go2/ros_command.py --keyboard
 0.6초가 지나면 목표 속도가 0이 된다. 기본 이동 속도는 1.5m/s, 회전은 1.5rad/s다.
 `--keyboard-speed`, `--keyboard-turn-speed`, `--keyboard-timeout`으로 변경한다.
 이동·회전 속도 옵션은 유한한 0 이상의 값을 받으며 상한은 없다. 공통 기본값은
-`control/go2/keyboard.py`의 `DEFAULT_KEYBOARD_SPEED`, `DEFAULT_KEYBOARD_TURN_SPEED`에서 수정한다.
+`ros2_ws/src/robot_control/robot_control/keyboard.py`의 `DEFAULT_KEYBOARD_SPEED`, `DEFAULT_KEYBOARD_TURN_SPEED`에서 수정한다.
 `ros_command.py --keyboard`는 Q 또는 Ctrl+C까지 실행하고 종료 시 정지 명령을 발행한다.
 `ros.py --keyboard`는 터미널 입력으로 직접 제어하며 `/clock`을 발행한다.
 별도 ROS 송신기에서 조작하려면 `ros.py`를 일반 ROS 모드로 실행한다.
@@ -217,7 +278,7 @@ tensorboard --logdir rl/rsl_rl/unitree_go2_flat --host 127.0.0.1 --port 6006
 몸체 높이 유지와 제자리 회전을 포함한 cmd_vel 추종 학습은 프로젝트 task를 사용한다.
 
 ```bash
-python rl/go2/train.py --task Shipyard-Go2-Flat-Tracking-v0 \
+python rl/go2/train.py --task Warehouse-Go2-Flat-Tracking-v0 \
   --num_envs 1024 --max_iterations 5000 --seed 42 --run_name trot_v4_fresh --headless
 ```
 
@@ -244,17 +305,18 @@ python rl/go2/train.py --task Shipyard-Go2-Flat-Tracking-v0 \
 | `.runtime/`, `.cache/`, `.conda/` | 로컬 실행 결과·캐시·가상환경 |
 
 warehouse 자산·시작 위치·카메라는 `scenarios/warehouse/scene_cfg.py`, Go2 모터 설정은
-`assets/go2/config/robot_cfg.py`, 정책 추론은 `control/go2/policy.py`를 수정한다.
+`assets/go2/config/robot_cfg.py`, 정책 추론은 `ros2_ws/src/robot_control/robot_control/go2/policy.py`를 수정한다.
 로봇 추가 절차는 [담당자용 개발 안내](docs/developer_guide.md)를 참고한다.
 
 ## 저장소와 참조 소스 받기
 
 IsaacLab과 Hunter 원본 소스는 CORA-AX의 별도 저장소를 submodule로 연결한다.
 연결 설정이 원격에 반영된 뒤 다른 컴퓨터에서는 다음 명령으로 함께 받는다.
+`REPOSITORY_URL`에는 사용할 저장소 주소를 설정한다.
 
 ```bash
-git clone --recurse-submodules https://github.com/CORA-AX/shipyard_robot_sim.git
-cd shipyard_robot_sim
+git clone --recurse-submodules "$REPOSITORY_URL" robot_sim
+cd robot_sim
 ```
 
 [Organization 저장소 구성](docs/organization_sources.md)에 각 저장소의 역할과 현재 연결 상태가 있다.
@@ -315,7 +377,7 @@ Conda를 사용할 수 있는 Bash 터미널에서 프로젝트 루트로 이동
 이미 `.conda/isaacsim-5.0` 환경이 있다면 다음 절의 활성화부터 진행한다.
 
 ```bash
-cd /home/rodix-gpu/shipyard_robot_sim
+cd /path/to/robot_sim
 
 # 현재 서버의 Conda 초기화. 이미 초기화된 셸이면 생략한다.
 source /home/rodix-gpu/miniforge3/etc/profile.d/conda.sh
@@ -344,7 +406,7 @@ python -m pip check
 새 터미널을 열 때마다 프로젝트 루트에서 활성화한다.
 
 ```bash
-cd /home/rodix-gpu/shipyard_robot_sim
+cd /path/to/robot_sim
 source /home/rodix-gpu/miniforge3/etc/profile.d/conda.sh
 conda activate "$PWD/.conda/isaacsim-5.0"
 which python
@@ -375,7 +437,7 @@ Go2 설치와 정책 준비는 [Go2 실행 문서](docs/go2_setup.md)를 참고�
 ## Isaac Sim 없이 HUNTER asset 검사
 
 ```bash
-cd /home/rodix-gpu/shipyard_robot_sim
+cd /path/to/robot_sim
 python3 scripts/hunter2/prepare_hunter2_asset.py
 python3 scripts/hunter2/validate_hunter2_asset.py
 python3 -m unittest discover -s tests -v
@@ -397,10 +459,11 @@ commit과 원본 파일의 SHA-256을 확인하므로 해당 저장소와 Git me
 `scenarios/`는 공통 장면과 로봇별 환경 연결, `assets/environments/`는 공통 배경 자산을 관리한다.
 `control/go2/`는 정책 제어·환경 실행·상태 검증 코드를 관리한다.
 `control/{hunter2,omni}`는 향후 제어 adapter용 관리 문서를 두었다.
-`navigation`, `ros2_ws`는 향후 작업용 디렉터리다.
+`ros2_ws`는 Go2 ROS 패키지·공통 실행·상태 연결을 관리한다. `navigation`은 향후 작업용 디렉터리다.
 [시나리오 관리 기준](scenarios/README.md)과 [로봇 제어 관리 기준](control/README.md)을 참고한다.
 상위 navigation은 Goal/Path와 공통 상태 인터페이스를 사용하고 로봇별 adapter를 둔다.
-프로젝트 공통 controller/adapter와 waypoint follower는 아직 구현하지 않았다.
+ROS workspace의 로봇별 속도 제어기·공통 실행부·PD waypoint follower를 구현했다.
+Space로 한 로봇씩 선택하며 경로 계획·장애물 회피·상위 플래너는 후속 단계다.
 Go2는 `scripts/viewer.py --robot go2`로 생성하고 `scripts/go2/control.py`로 제어한다.
 
 **HUNTER 상태: 조향축·중복 형상 교정 및 정적 검증 완료, Isaac import·물리/주행 검증 미완료.**

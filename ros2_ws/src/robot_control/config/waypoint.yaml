@@ -1,0 +1,42 @@
+# SI units. Position PD outputs body cmd_vel for the existing low-level controllers.
+rate: 50.0
+odom_timeout: 0.75          # wall seconds without a newer odometry sample
+goal_max_age: 2.0          # simulation seconds; zero-stamped CLI goals mean "now"
+switch_timeout: 10.0      # wall seconds to confirm the previous robot stopped
+robots:
+  - {id: go2_0, type: go2, namespace: go2_0}
+  - {id: lekiwi_0, type: lekiwi, namespace: lekiwi_0}
+profiles:
+  go2:
+    # The flat policy stands still for small velocity requests; stay responsive until the arrival band.
+    kp_position: 2.4
+    kd_velocity: 0.25
+    kp_yaw: 1.8
+    kd_yaw_rate: 0.25
+    max_speed: 0.45
+    max_yaw_rate: 0.6
+    max_acceleration: 0.7
+    max_yaw_acceleration: 1.5
+    position_tolerance: 0.10
+    yaw_tolerance: 0.12
+    settle_speed: 0.12
+    settle_yaw_rate: 0.25
+    settle_time: 0.3
+    velocity_filter_tau: 0.08
+    goal_timeout: 60.0
+  lekiwi:
+    kp_position: 0.9
+    kd_velocity: 0.25
+    kp_yaw: 1.8
+    kd_yaw_rate: 0.25
+    max_speed: 0.25
+    max_yaw_rate: 0.6
+    max_acceleration: 0.4
+    max_yaw_acceleration: 1.5
+    position_tolerance: 0.06
+    yaw_tolerance: 0.10
+    settle_speed: 0.05
+    settle_yaw_rate: 0.15
+    settle_time: 0.35
+    velocity_filter_tau: 0.08
+    goal_timeout: 60.0

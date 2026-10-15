@@ -37,6 +37,6 @@ try:
             'physics_steps':30,'dt':1/60,'hunter_imported':False,'usd_created':False}
     out=ROOT/'docs/isaacsim_install_evidence';out.mkdir(exist_ok=True)
     (out/'runtime_check.json').write_text(json.dumps(report,indent=2)+'\n')
-    print('SHIPYARD_ISAAC_SMOKE_PASS '+json.dumps(report),flush=True)
+    print('WAREHOUSE_ISAAC_SMOKE_PASS '+json.dumps(report),flush=True)
 finally:
     app.close()

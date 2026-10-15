@@ -30,10 +30,10 @@ def main():
             or (args.duration is not None and (not math.isfinite(args.duration) or args.duration <= 0))
             or args.rate <= 0 or not 0 <= args.ros_domain_id <= 232):
         parser.error('Use finite velocities, positive duration/rate and ROS domain 0..232.')
-    if not os.environ.get('SHIPYARD_ROS_COMMAND_WORKER'):
+    if not os.environ.get('WAREHOUSE_ROS_COMMAND_WORKER'):
         environment = ros_environment()
         environment['ROS_DOMAIN_ID'] = str(args.ros_domain_id)
-        environment['SHIPYARD_ROS_COMMAND_WORKER'] = '1'
+        environment['WAREHOUSE_ROS_COMMAND_WORKER'] = '1'
         os.execve(sys.executable, [sys.executable, str(Path(__file__).resolve()), *sys.argv[1:]], environment)
     from geometry_msgs.msg import Twist
     from rclpy.context import Context
@@ -42,7 +42,7 @@ def main():
     context.init(args=[])
     node = None
     try:
-        node = Node('shipyard_go2_command', context=context)
+        node = Node('warehouse_go2_command', context=context)
         publisher = node.create_publisher(Twist, args.topic, 1)
         deadline = time.monotonic() + 5.0
         while publisher.get_subscription_count() == 0:

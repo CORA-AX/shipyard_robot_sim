@@ -8,6 +8,10 @@
 - `keyboard.py`: 공통 터미널 키 입력·자동 정지·터미널 설정 복원.
 - 공통 `../control_channel.py`: 로컬 제어 연결·세션·스텝·메시지 검사.
 
+정책·키보드·ROS 관련 구현의 원본은 이제 `ros2_ws/src/robot_control` 및 `robot_sim`에 있다.
+이 폴더의 해당 Python 파일은 기존 실행 명령을 위한 호환 import다.
+[workspace 실행 안내](../../ros2_ws/README.md)를 참고한다.
+
 모델·모터 설정은 `assets/go2/config/`, 관측·액션·리셋은 `scenarios/`에서 관리한다.
 
 ```bash

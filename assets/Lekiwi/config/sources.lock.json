@@ -1,0 +1,12 @@
+{
+  "source_repository": "https://github.com/kabilankb/lekiwi_isaacsim",
+  "snapshot_date": "2026-10-15",
+  "note": "Existing workspace asset snapshot; no claim that files match an upstream Git commit.",
+  "files": {
+    "lekiwi_isaacsim/urdf/lekiwi/configuration/lekiwi_base.usd": "1d879fab144fa25c0524d4f0bce59b981725e7787d59f43d26bc94accb10f3ac",
+    "lekiwi_isaacsim/urdf/lekiwi/configuration/lekiwi_physics.usd": "8baffbae00f945c09f531edc73b4c93d7131e8a121a916d29f3b86117e28d869",
+    "lekiwi_isaacsim/urdf/lekiwi/configuration/lekiwi_sensor.usd": "4a5e724017c098097175bfec68af37ededc6be8cb33e31aefdb98271a710dd05",
+    "lekiwi_isaacsim/urdf/lekiwi/lekiwi.usd": "3fbd1f827fda18483e10d46123b63d1b0ba8d14687ba87a2c3ff6afee2a1a7a2",
+    "lekiwi_isaacsim/urdf/lekiwi.urdf": "6129db4af3ace15444beb2fe1ceae51784e07278cb54ecc1cf796528f91df31d"
+  }
+}

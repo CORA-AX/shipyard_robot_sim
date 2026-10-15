@@ -28,7 +28,8 @@ python scripts/go2/control.py
 ```
 
 viewer가 로봇·환경·물리를 담당하고 제어기는 체크포인트 Actor를 추론한다.
-정책 네트워크 구성은 `control/go2/policy.py`에서 관리한다. 평지 정책은 장애물 회피를 수행하지 않는다.
+정책 네트워크 구성은 `ros2_ws/src/robot_control/robot_control/go2/policy.py`에서 관리한다.
+기존 `control/go2/policy.py`는 호환 import다. 평지 정책은 장애물 회피를 수행하지 않는다.
 `--checkpoint`로 다른 모델을 선택할 수 있다. 공식 정책은 `prepare_go2_policy.py`로 준비한 뒤
 `python scripts/go2/control.py --checkpoint assets/go2/policies/flat.pt`로 실행한다.
 정책 `.pt` 파일은 Git에서 제외된다. 기본 제어 정책은 `prepare_go2_policy.py --control-policy`로 복원한다.

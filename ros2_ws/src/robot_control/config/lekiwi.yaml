@@ -1,0 +1,25 @@
+# SI units. Joint order follows the imported asset; +X forward, +Y left, +Z up.
+# Source wheel axes were arbitrary URDF vectors imported as empty USD axis tokens.
+# Runtime reauthors wheel joint frames around these explicit base-frame axles.
+wheel_radius: 0.0508
+wheel_damping: 4.0
+wheel_torque: 8.0
+roller_radius: 0.009
+roller_mass: 0.02
+rollers_per_wheel: 12
+wheels:
+  - joint: ST3215_Servo_Motor_v1_1_Revolute_62
+    body: omni_wheel_mount_v5_1
+    position: [0.08629754, 0.05052828, 0.01786]
+    axle: [0.8660254, 0.5]
+    hub_offset: 0.0215845
+  - joint: ST3215_Servo_Motor_v1_2_Revolute_60
+    body: omni_wheel_mount_v5_2
+    position: [0.00061000, -0.11920000, 0.01786]
+    axle: [0.0, -1.0]
+    hub_offset: 0.0215845
+  - joint: ST3215_Servo_Motor_v1_Revolute_64
+    body: omni_wheel_mount_v5
+    position: [-0.08621471, 0.04907171, 0.01786]
+    axle: [-0.8660254, 0.5]
+    hub_offset: 0.0215845

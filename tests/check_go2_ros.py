@@ -40,7 +40,7 @@ def main():
     output.mkdir(parents=True, exist_ok=True)
     context = Context()
     context.init(args=[])
-    node = Node('shipyard_go2_ros_check', context=context)
+    node = Node('warehouse_go2_ros_check', context=context)
     executor = SingleThreadedExecutor(context=context)
     executor.add_node(node)
     clocks = []

@@ -1,0 +1,6 @@
+# Current policy contract. Runtime verifies these values against the environment.
+observation_size: 48
+action_size: 12
+policy_rate_hz: 50
+physics_dt: 0.005
+checkpoint_manifest: assets/go2/config/sources.lock.json

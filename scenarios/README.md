@@ -7,8 +7,10 @@
 - `warehouse/go2_env_cfg.py`: 공통 배경에 Go2 로봇·접촉 센서를 배치하고 기존 관측·액션 설정을 연결.
 - `assets/environments/warehouse/`: 배경 자산 URL·버전·원본 레포 출처 기록.
 
-현재 실행 가능한 연결은 Go2 한 대다. 여러 로봇을 동시에 실행하는 환경과 공통 실행기는
-아직 구현하지 않았다. 공통 장면을 확장할 때 Go2 정책의 관측·액션을 다른 로봇에 적용하지 않는다.
+기존 viewer/환경 연결은 Go2 한 대이며 ROS workspace의 공통 실행부는 같은 장면에
+Go2+Lekiwi를 배치한다. 로봇 목록과 시작 위치는 `robot_bringup/config/go2_lekiwi.yaml`,
+articulation 생성과 물리 루프는 `robot_sim/scene.py`, `multi_runtime.py`에서 관리한다.
+Go2 정책의 관측·액션은 Go2에만 사용하고 Lekiwi는 바퀴 제어기를 사용한다.
 Hunter2 연결과 차량 제어는 후속 작업이며 이번 정리에서는 Hunter2 파일을 수정하지 않았다.
 
 ```bash
@@ -31,11 +33,8 @@ Go2 환경 설정도 모두 이 폴더에서 관리한다. `flat/go2_env_cfg.py`
 
 Go2 정책 추론과 viewer 내부 물리 루프는 `control/go2/`, 사용자 실행 명령은 `scripts/go2/`에 둔다.
 
-`../rl/go2/tasks/flat_tracking/`은 높이 유지·속도 추종·제자리 회전·대각선 trot을 학습하는 별도 Isaac Lab task다.
-`rl/go2/train.py`와 `rl/go2/play.py`로 실행한다.
-[보상·명령 설정과 학습 방법](../rl/README.md)을 참고한다.
 
-전체 구조와 실행 명령은 [로봇 담당자 안내](../docs/developer_guide.md)를 참고한다.
+전체 구조와 실행 명령은 [로봇 담당자 안내](../developer_guide.md)를 참고한다.
 
 Viewer가 Go2를 생성하고 별도 `scripts/go2/control.py`가 정책을 실행한다.
 [분리 실행 안내](../docs/viewer_control.md)를 참고한다.

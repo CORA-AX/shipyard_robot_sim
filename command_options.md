@@ -8,7 +8,7 @@
 viewer·Go2 제어·설치 검사는 공통 Conda 환경에서 실행한다. 두 터미널을 사용하면 각각 활성화한다.
 
 ```bash
-cd /home/rodix-gpu/shipyard_robot_sim
+cd /path/to/robot_sim
 source /home/rodix-gpu/miniforge3/etc/profile.d/conda.sh
 conda activate "$PWD/.conda/isaacsim-5.0"
 ```
@@ -142,6 +142,83 @@ Ctrl+C로 제어기를 종료하면 viewer는 화면을 유지하고 물리를 �
 다시 실행하면 현재 상태에서 재개한다. viewer의 `--steps`는 누적 스텝이고 제어기의
 `--steps`는 이번 연결 기준이다. viewer가 요청 스텝 전에 종료하면 제어기는 오류를 반환한다.
 
+## ROS workspace 실행
+
+```bash
+bash ros2_ws/build.sh
+source /opt/ros/humble/setup.bash
+source ros2_ws/install/setup.bash
+ros2 launch robot_bringup simulation.launch.py
+ros2 run robot_control teleop --robot-id go2_0 --keyboard
+```
+
+시뮬레이터와 teleop는 각각 별도 터미널에서 실행한다. 각 터미널에서 두 setup 파일을 source한다.
+단독 및 Go2+Lekiwi 동시 실행을 지원하며 기본 설정은 Go2(`go2_0`) 단독이다.
+Lekiwi는 `robots_file:="$PWD/ros2_ws/src/robot_bringup/config/lekiwi_single.yaml"`을 지정하고
+teleop에 `--robot-id lekiwi_0`를 사용한다.
+동시 실행은 `robots_file:="$PWD/ros2_ws/src/robot_bringup/config/go2_lekiwi.yaml"`이며
+`/go2_0/reset`, `/lekiwi_0/reset`에 `std_srvs/srv/Trigger` 서비스를 호출해 선택 리셋한다.
+launch의 `display:=headless`, `robots_file:=/path/robots.yaml`, `steps:=900`,
+`report:=/path/report.json`, `ros_domain_id:=0` 등을 사용할 수 있다.
+[전체 launch 옵션·상태 토픽·구현 범위](ros2_ws/README.md)를 참고한다.
+
+### RViz 로컬·원격 화면
+
+| launch 인자 | 기본값 | 역할 |
+|---|---|---|
+| `rviz_display` | `auto` | `local`, `web`, `off`; auto는 Isaac local→local, webrtc→web, headless→off |
+| `rviz_robot` | 첫 로봇 id | 초기 카메라 중심에 둘 로봇; 제어 대상은 waypoint 터미널에서 선택 |
+| `rviz_goal_topic` | `/waypoint/goal_pose` | RViz 공통 목표 입력 토픽 |
+| `rviz_port` | `6080` | noVNC loopback 포트, SSH 터널로 접속 |
+| `rviz_resolution` | `1440x900` | 원격 화면 해상도와 초기 RViz 창 크기 |
+| `rviz_rendering` | `auto` | 원격은 software, 로컬은 native; 명시적으로 `software` 또는 `native` 선택 가능 |
+
+```bash
+# 원격 도구 최초 준비: sudo 없이 프로젝트 내부에 설치
+bash ros2_ws/setup_rviz_web.sh
+
+# 이미 실행 중인 시뮬레이터에 RViz만 연결
+ros2 launch robot_bringup rviz.launch.py rviz_display:=web
+
+# 또는 처음부터 Isaac WebRTC와 함께 실행
+ros2 launch robot_bringup simulation.launch.py \
+  display:=webrtc server_ip:=192.168.1.149
+
+# 접속 PC에서 별도 터미널로 SSH 터널 유지
+ssh -N -L 6080:127.0.0.1:6080 rodix-gpu@192.168.1.149
+```
+
+브라우저 주소는 `http://localhost:6080/vnc.html`이다.
+별도 RViz launch에도 시뮬레이터와 같은 `robots_file`·`ros_domain_id`를 지정한다.
+로컬에서는 `simulation.launch.py display:=local`로 두 창을 함께 실행한다.
+RViz는 공통 목표를 발행하고 waypoint 노드는 선택한 로봇에만 적용한다.
+
+### PD waypoint 실행
+
+```bash
+ros2 run robot_control waypoint
+ros2 run robot_control waypoint --robots-file "$PWD/ros2_ws/src/robot_bringup/config/go2_lekiwi.yaml"
+```
+
+기본은 Go2 → Lekiwi 순서다. 이 터미널에서 **Space**를 누르면 다음 로봇으로 전환하고
+이전 목표를 취소한다. 이전 로봇의 정지를 확인한 뒤 새 목표를 추종한다.
+**X/Esc**는 취소, **Q/Ctrl+C**는 모든 로봇에 정지 명령을 보내고 종료한다.
+기존 teleop는 종료하며 각 ROS 터미널의 도메인을 맞춘다. Conda 활성화는 필요 없다.
+변경 후 simulator/RViz를 재시작해 공통 목표 토픽과 리셋 알림을 적용한다.
+
+| 옵션 | 기본값 | 역할 |
+|---|---|---|
+| `--config` | 설치된 `robot_control/config/waypoint.yaml` | PD 게인·자동 속도/가속도 제한·도착 조건 |
+| `--robots-file` | waypoint config의 Go2 + Lekiwi | simulator와 같은 로봇 목록·namespace |
+| `--robot` | 첫 Go2, 없으면 첫 로봇 | 초기 선택 robot id |
+| `--goal-topic` | `/waypoint/goal_pose` | RViz 입력 토픽; `rviz_goal_topic`과 일치 |
+| `--frame` | `map` | 목표와 odom을 TF로 변환할 공통 좌표계 |
+| `--track-yaw` | 꺼짐 | RViz에서 드래그한 방향도 추종; 기본은 목표 수락 시 yaw 유지 |
+| `--no-keyboard` | 꺼짐 | TTY 없이 `/waypoint/next_robot`, `/waypoint/cancel` 서비스로 조작 |
+| `--report` | 미설정 | 목표 수락/거부 횟수·선택 전환·상태 이력 JSON |
+
+PD는 단일 목표를 직접 추종하며 장애물 회피·경로 계획은 포함하지 않는다.
+
 ## ROS Go2 독립 실행
 
 ```bash
@@ -151,6 +228,11 @@ python scripts/go2/ros.py [옵션]
 | 옵션 | 기본값 | 역할 |
 |---|---|---|
 | `--scenario` | `warehouse` | `flat`, `warehouse` |
+| `--robot-id` | `go2` | ROS node 식별자 |
+| `--namespace` | `unitree_go2` | 상태 토픽 및 odom/base TF prefix |
+| `--initial-position` | 환경 기본값 | x y z 시작 위치, m |
+| `--initial-yaw` | `0` | 시작 yaw, rad |
+| `--seed` | `42` | 환경 seed |
 | `--device` | `cuda:0` | 시뮬레이션 장치 |
 | `--policy-device` | `cpu` | 정책 추론 장치 |
 | `--checkpoint` | manifest의 `control_policy` | 기본 모델 `upstream_flat_6800.pt`; SHA-256 검사 |
@@ -314,9 +396,9 @@ GPU·설치 검사 결과는 `docs/isaacsim_install_evidence/`에 저장된다.
 ## 10. Go2 평지 PPO tracking 학습·재생
 
 ```bash
-python rl/go2/train.py --task Shipyard-Go2-Flat-Tracking-v0 \
+python rl/go2/train.py --task Warehouse-Go2-Flat-Tracking-v0 \
   --num_envs 1024 --max_iterations 300 --seed 42 --run_name tracking --headless
-python rl/go2/play.py --task Shipyard-Go2-Flat-Tracking-Play-v0 \
+python rl/go2/play.py --task Warehouse-Go2-Flat-Tracking-Play-v0 \
   --num_envs 16 --checkpoint /절대경로/model_299.pt
 ```
 

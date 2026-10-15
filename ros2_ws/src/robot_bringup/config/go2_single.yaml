@@ -1,0 +1,9 @@
+world:
+  scenario: warehouse
+  seed: 42
+robots:
+  - id: go2_0
+    type: go2
+    namespace: go2_0
+    position: [0.0, 0.0, 0.4]
+    yaw: 0.0

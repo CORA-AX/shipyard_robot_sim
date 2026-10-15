@@ -8,3 +8,7 @@ logs/
 outputs/
 assets/go2/policies/*.pt
 assets/go2/policies/exported/
+/ros2_ws/build/
+/ros2_ws/install/
+/ros2_ws/log/
+*.egg-info/
