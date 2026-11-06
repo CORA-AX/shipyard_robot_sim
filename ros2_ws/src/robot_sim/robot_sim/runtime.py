@@ -66,6 +66,9 @@ def run_ros(app, args, root, report):
               f'timeout={args.command_timeout}s; ROS_DOMAIN_ID={args.ros_domain_id}', flush=True)
         with torch.inference_mode():
             while app.is_running() and bridge.context.ok() and (not args.steps or step < args.steps):
+                if getattr(args, 'stop_requested', False):
+                    report['stopped_by_user'] = True
+                    break
                 tick = time.monotonic()
                 if args.keyboard:
                     command = keyboard.poll()

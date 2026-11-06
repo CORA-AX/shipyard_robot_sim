@@ -1,0 +1,9 @@
+<!-- Deliberately no blind backup/spin recovery in the sensorless first phase. -->
+<root main_tree_to_execute="MainTree">
+  <BehaviorTree ID="MainTree">
+    <Sequence name="NavigateStaticWarehouse">
+      <ComputePathToPose goal="{goal}" path="{path}" planner_id="GridBased"/>
+      <FollowPath path="{path}" controller_id="FollowPath" goal_checker_id="goal_checker"/>
+    </Sequence>
+  </BehaviorTree>
+</root>

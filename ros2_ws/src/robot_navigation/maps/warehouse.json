@@ -1,0 +1,45 @@
+{
+  "source_url": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/5.0/Isaac/Environments/Simple_Warehouse/warehouse.usd",
+  "source_lock": {
+    "upstream": {
+      "repository": "https://github.com/Zhefan-Xu/isaac-go2-ros2",
+      "commit": "f201692a5519e6e6ed058637ce93a2f603f016f2",
+      "source": "env/sim_env.py:create_warehouse_env"
+    },
+    "warehouse": {
+      "name": "NVIDIA Simple Warehouse",
+      "isaac_sim_version": "5.0",
+      "url": "https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/5.0/Isaac/Environments/Simple_Warehouse/warehouse.usd",
+      "layout": "USD-authored static layout; no random terrain generation",
+      "meters_per_unit": 1,
+      "up_axis": "Z"
+    }
+  },
+  "generator": "scripts/export_warehouse_map.py",
+  "isaac_sim": "5.0.0",
+  "resolution": 0.05,
+  "origin": [
+    -10.950000000000001,
+    -12.75,
+    0.0
+  ],
+  "width": 420,
+  "height": 626,
+  "obstacle_height_band": [
+    0.03,
+    0.65
+  ],
+  "active_colliders": 757,
+  "collider_paths_sha256": "6f3126dfe3ff619b7e59c9170a42d9f6baf6d56979ada9a55e74ae42ce28d843",
+  "image_sha256": "b2593516cab1a251b48a875ded7c431afd4f9bd6d7638b986635453bc6ddd2c9",
+  "cells": {
+    "free": 228721,
+    "occupied": 10598,
+    "unknown": 23601
+  },
+  "floor_connected_to": [
+    0.0,
+    0.0
+  ],
+  "composition_errors": 0
+}

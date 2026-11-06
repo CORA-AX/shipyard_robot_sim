@@ -1,0 +1,33 @@
+{
+  "geometry": "Roads, ramps, stairs, rails and markings authored locally by build_shipyard_routes.py.",
+  "reused_pack": "Shipyard and Dry Dock",
+  "source_url": "https://3dassets.dev/packs/shipyard-and-dry-dock",
+  "upstream_license": "CC0 1.0 Universal, as stated on pack page; checked 2026-11-02",
+  "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source_sha256": "e0cbb24568e70306757b5002ad4c933d18e007058caf13da6bf09e29fd711e77",
+  "reused_props": [
+    {
+      "prim": "/World/RoadNetwork/Props/PipeRack",
+      "source_prim": "/Shipyard/Geometry/n0000_shipyard_and_dry_dock_starter_scene/n0921__20_shipyard_and_dry_dock_pipe_spool_rack"
+    },
+    {
+      "prim": "/World/RoadNetwork/Props/FirePoint",
+      "source_prim": "/Shipyard/Geometry/n0000_shipyard_and_dry_dock_starter_scene/n1020__32_shipyard_and_dry_dock_fire_point"
+    },
+    {
+      "prim": "/World/RoadNetwork/Props/StoreContainer",
+      "source_prim": "/Shipyard/Geometry/n0000_shipyard_and_dry_dock_starter_scene/n1167__54_shipyard_and_dry_dock_store_container"
+    },
+    {
+      "prim": "/World/RoadNetwork/Props/YardLight",
+      "source_prim": "/Shipyard/Geometry/n0000_shipyard_and_dry_dock_starter_scene/n1029__34_shipyard_and_dry_dock_floodlight_mast"
+    }
+  ],
+  "official_alternative": {
+    "url": "https://docs.omniverse.nvidia.com/usd/latest/usd_content_samples/downloadable_packs.html",
+    "pack": "SimReady Warehouse 01",
+    "size": "13.9 GB",
+    "imported": false,
+    "reason": "Reuse the matching local CC0 pack and dimensioned local road geometry without new remote dependencies."
+  }
+}

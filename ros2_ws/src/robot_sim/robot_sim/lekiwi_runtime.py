@@ -76,6 +76,9 @@ def run_ros(app, args, root, report):
         physics_start = sim.current_time
         with torch.inference_mode():
             while app.is_running() and bridge.context.ok() and (not args.steps or step < args.steps):
+                if getattr(args, 'stop_requested', False):
+                    report['stopped_by_user'] = True
+                    break
                 tick = time.monotonic()
                 command = bridge.poll()
                 stale = bridge.command.stale

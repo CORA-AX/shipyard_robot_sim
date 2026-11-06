@@ -3,6 +3,9 @@ set -e
 workspace_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 project_dir="$(dirname "$workspace_dir")"
 source /opt/ros/humble/setup.bash
+if [ -d "$project_dir/.runtime/nav2/sysroot/opt/ros/humble" ]; then
+    source "$workspace_dir/nav2_env.bash"
+fi
 cd "$workspace_dir"
 if command -v colcon >/dev/null 2>&1; then
     exec colcon build --symlink-install --executor sequential "$@"

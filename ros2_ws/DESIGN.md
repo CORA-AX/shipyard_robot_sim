@@ -2,7 +2,9 @@
 
 2026-10-14에 작성한 전체 확장 설계다. 초기 Go2 workspace 구현 이후의 실제 실행 방법과 구현 범위는 [README.md](README.md)를 따른다.
 Lekiwi 단독 및 공통 장면의 Go2+Lekiwi 동시 실행·독립 리셋과 Space 선택 PD waypoint를 추가 구현했다.
-이 문서의 Hunter2·경로 계획·fleet는 후속 설계이며 아직 구현하지 않았다.
+Go2 한 대의 정적 warehouse Nav2 경로 계획/추종도 구현했다.
+Hunter2는 workspace 밖의 [독립 hunter 폴더](../hunter/README.md)에서 Ackermann 제어·ROS teleop을 구현했다.
+이 workspace에 Hunter2를 통합하는 작업과 다중 로봇 navigation·fleet는 후속 설계다.
 
 ## NVIDIA ROS 설치 문서와의 호환성 확인
 
@@ -35,7 +37,7 @@ OmniGraph 확장 자동 시작은 끈 상태다. 공식 OmniGraph ROS 노드를 
 ## 패키지 구성
 
 처음에는 `robot_sim`, `robot_control`, `robot_bringup` 세 패키지를 구현한다.
-`robot_navigation`, `fleet_planner`, `robot_interfaces`는 해당 기능을 추가할 때 만든다.
+현재 `robot_navigation`도 추가했다. `fleet_planner`, `robot_interfaces`는 해당 기능을 추가할 때 만든다.
 모든 ROS 패키지는 `ros2_ws/src/` 바로 아래에 두고 중첩 패키지를 만들지 않는다.
 
 ```text
@@ -71,14 +73,11 @@ ros2_ws/
           policy.py                 # 기존 flat 정책 로더/추론
         lekiwi/
           controller.py             # 3개 바퀴의 속도 계산
-        hunter2/
-          controller.py             # 조향각·바퀴 속도 계산
         nodes/
           teleop_node.py            # 기존 ROS 키보드/상수 명령 송신
       config/
         go2.yaml
         lekiwi.yaml
-        hunter2.yaml
       test/
     robot_bringup/                  # ament_python
       package.xml

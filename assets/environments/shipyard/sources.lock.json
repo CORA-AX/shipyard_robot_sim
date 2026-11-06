@@ -1,0 +1,12 @@
+{
+  "name": "Shipyard and Dry Dock",
+  "url": "https://3dassets.dev/packs/shipyard-and-dry-dock",
+  "source": "source/model.glb",
+  "sha256": "e0cbb24568e70306757b5002ad4c933d18e007058caf13da6bf09e29fd711e77",
+  "license": "Not bundled in supplied GLB; retain upstream terms before redistribution.",
+  "converter": "scripts/environments/prepare_shipyard.py",
+  "coordinates": "glTF meters Y-up -> USD meters Z-up: (x, -z, y)",
+  "material_limitations": [
+    "KHR_materials_transmission is approximated with opaque UsdPreviewSurface glass."
+  ]
+}

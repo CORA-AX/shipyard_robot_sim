@@ -17,6 +17,8 @@ HELP = ('GO2_KEYBOARD_READY: W/S forward/back; A/D left/right; Z/C turn left/rig
 
 def add_keyboard_arguments(parser):
     parser.add_argument('--keyboard', action='store_true', help='Control movement from this terminal.')
+    parser.add_argument('--keyboard-layout', choices=('holonomic',), default='holonomic',
+                        help='Go2/Lekiwi keyboard layout; use hunter/teleop.py for Hunter.')
     parser.add_argument('--keyboard-speed', type=float, default=DEFAULT_KEYBOARD_SPEED,
                         help='Movement speed in m/s (nonnegative, no upper limit).')
     parser.add_argument('--keyboard-turn-speed', type=float, default=DEFAULT_KEYBOARD_TURN_SPEED,
@@ -35,6 +37,8 @@ def validate_keyboard_arguments(parser, args):
 
 
 class KeyboardCommand:
+    help = HELP
+
     def __init__(self, speed=DEFAULT_KEYBOARD_SPEED, turn_speed=DEFAULT_KEYBOARD_TURN_SPEED,
                  timeout=0.6, clock=time.monotonic):
         self.speed, self.turn_speed, self.timeout, self.clock = speed, turn_speed, timeout, clock
@@ -50,6 +54,12 @@ class KeyboardCommand:
 
     def current(self):
         return (0.0, 0.0, 0.0) if self.quit or self.stale else self.values
+
+    def direction(self, key):
+        return {'w': (self.speed, 0., 0.), 's': (-self.speed, 0., 0.),
+                'a': (0., self.speed, 0.), 'd': (0., -self.speed, 0.),
+                'z': (0., 0., self.turn_speed), 'c': (0., 0., -self.turn_speed),
+                ' ': (0., 0., 0.), 'x': (0., 0., 0.), 'q': (0., 0., 0.)}.get(key)
 
     def feed(self, text):
         for key in text:
@@ -73,13 +83,10 @@ class KeyboardCommand:
                 self.escape = key
                 continue
             key = key.lower()
-            directions = {'w': (self.speed, 0., 0.), 's': (-self.speed, 0., 0.),
-                          'a': (0., self.speed, 0.), 'd': (0., -self.speed, 0.),
-                          'z': (0., 0., self.turn_speed), 'c': (0., 0., -self.turn_speed),
-                          ' ': (0., 0., 0.), 'x': (0., 0., 0.), 'q': (0., 0., 0.)}
-            if key not in directions:
+            command = self.direction(key)
+            if command is None:
                 continue
-            self.values = directions[key]
+            self.values = command
             self.received_at = self.clock()
             self.events += 1
             self.quit = key == 'q'
@@ -105,7 +112,7 @@ class TerminalKeyboard:
                 termios.tcsetattr(self.fd, termios.TCSANOW, self.saved)
                 self.saved = None
                 raise
-            print(HELP, flush=True)
+            print(self.state.help, flush=True)
         return self
 
     def poll(self):

@@ -1,9 +1,155 @@
 # ROS 2 Humble workspace
 
-현재 `robot_control`, `robot_sim`, `robot_bringup` 세 `ament_python` 패키지를 구현했다.
+현재 `robot_control`, `robot_sim`, `robot_navigation`, `robot_bringup` 네 `ament_python` 패키지를 구현했다.
 시스템 Humble의 Python 3.10 launch/명령 노드와 Isaac Sim 5.0의 Python 3.11을
 별도 프로세스로 실행하고 DDS로 연결한다. 현재 지원 범위는 **warehouse 또는 flat에서 Go2/Lekiwi 단독 실행 및 Go2+Lekiwi 동시 실행**다.
-navigation·상위 플래너 확장 설계는 [DESIGN.md](DESIGN.md)를 참고한다.
+Go2 한 대의 warehouse Nav2 경로 계획/추종을 지원한다. 다중 로봇 navigation·상위 플래너
+확장 설계는 [DESIGN.md](DESIGN.md)를 참고한다.
+
+## Go2 Nav2 navigation
+
+시스템 Humble 터미널에서 실행한다. Isaac Conda를 활성화하지 않는다.
+최초 한 번 `setup.sh`로 Nav2 실행 패키지와 원격 RViz 도구를 함께 준비한다.
+Nav2는 `.runtime/nav2/sysroot`, 원격 RViz 도구는 `.runtime/rviz_web/sysroot`에 설치한다.
+Ubuntu/ROS 배포 패키지와 필요한 의존성을 내려받아 압축 해제하며, sudo나 시스템 변경은 없다.
+설치 버전은 `.runtime/nav2/packages.json`에 기록된다. 이미 시스템에 설치한 Nav2도 사용할 수 있다.
+
+```bash
+bash ros2_ws/setup.sh
+bash ros2_ws/build.sh
+source ros2_ws/nav2_env.bash
+
+# 로컬 Isaac + 로컬 RViz
+ros2 launch robot_bringup navigation.launch.py
+
+# SSH: Isaac WebRTC + RViz 웹 뷰어 (기존 접속 방식 유지)
+ros2 launch robot_bringup navigation.launch.py display:=webrtc server_ip:=192.168.1.149
+
+# Isaac와 RViz 모두 화면 없이 실행
+ros2 launch robot_bringup navigation.launch.py display:=headless rviz_display:=off
+```
+
+`setup.sh --only nav2` 또는 `setup.sh --only rviz-web`으로 필요한 구성만 설치할 수도 있다.
+설치는 최초 준비/재설치 때 실행하며, 빌드는 `build.sh`, 새 터미널의 환경 설정은 `source nav2_env.bash`로 수행한다.
+원격 RViz의 SSH 포트 전달은 아래 RViz 절과 동일하다.
+서버의 6080 포트를 SSH로 전달한 뒤 `http://localhost:6080/vnc.html`로 접속한다.
+RViz 기본 뷰는 Orbit이며 warehouse 점유 지도와 Go2의 초록색 Nav2 경로를 표시한다.
+`READY` 이후 **2D Goal Pose**로 바닥을 클릭하고 드래그한다. 클릭 위치는 목표 XY,
+화살표 방향은 목표 yaw다. Nav2가 경로를 추종한 뒤 목표 방향까지 정렬하며,
+현재 위치에서 방향만 바꾸는 목표도 보낼 수 있다. `/waypoint/status`의 `yaw_error`는
+목표 방향까지 남은 부호 있는 최단 회전각(rad)이며, `goal`은 `[x, y, yaw]`다.
+위 실행은 시뮬레이터까지 함께 시작하므로, 기존 실행에 붙일 때는 다음처럼 사용한다.
+
+```bash
+source ros2_ws/nav2_env.bash
+ros2 launch robot_bringup navigation.launch.py start_simulator:=false \
+  robots_file:=ros2_ws/src/robot_bringup/config/go2_lekiwi.yaml rviz_display:=web
+
+# 목표 취소: 마지막 동작은 자동 재개하지 않음
+ros2 service call /waypoint/cancel std_srvs/srv/Trigger '{}'
+ros2 topic echo /waypoint/status --qos-durability transient_local
+```
+
+이번 단계의 선택 로봇은 `navigation_robot:=go2_0` 한 대다. Lekiwi는 Nav2 대상이 아니며,
+다른 로봇/이동 장애물은 정적 지도에 포함되지 않는다. 단일 주행 검증에는 `go2_single.yaml`을 사용한다.
+**PD waypoint, teleop 등 `/go2_0/cmd_vel`을 직접 발행하는 노드는 함께 실행하지 않는다.**
+selector는 명령 발행자가 중복되면 0 명령을 보내고 종료한다.
+
+터미널 X/Esc/Q를 사용하려면 launch의 selector를 끄고 별도 터미널에서 실행한다.
+Space는 현재 단일 Go2 목표를 취소하고 선택을 유지한다. 로봇 간 Space 전환은 Lekiwi Nav2 확장 단계에서 추가한다.
+
+```bash
+# 터미널 1
+ros2 launch robot_bringup navigation.launch.py goal_selector:=false
+# 터미널 2
+source ros2_ws/nav2_env.bash
+ros2 run robot_navigation goal_selector \
+  --robots-file ros2_ws/src/robot_bringup/config/go2_single.yaml --robot go2_0
+```
+
+연결 구조는 다음과 같다. 최종 `/cmd_vel` 발행자는 selector 한 개이며, Nav2가 직접 발행하지 않는다.
+
+```text
+RViz /waypoint/goal_pose
+  → goal_selector → /go2_0/navigate_to_pose (Nav2 action)
+  → Navfn A* planner → DWB holonomic controller
+  → /go2_0/cmd_vel_nav → velocity_smoother
+  → /go2_0/cmd_vel_smoothed → goal_selector의 명령 게이트
+  → /go2_0/cmd_vel → 기존 Go2 정책 → Isaac 물리
+
+Isaac /clock, /go2_0/odom, /tf, /tf_static → Nav2 (use_sim_time)
+map_server /map → global/local static costmap + inflation
+```
+
+기존 `map → go2_0/odom → go2_0/base_link` TF를 그대로 사용한다.
+SLAM·AMCL·lidar·카메라·상태 추정기는 실행하지 않는다. 정적 지도의 장애물에 대한 경로 계획과
+충돌 예측만 가능하며, 움직이는 물체를 인식하거나 다중 로봇의 통행 우선순위를 조정하지 않는다.
+센서 없는 첫 단계에서는 장애물 방향으로 후진하는 자동 recovery도 사용하지 않는다.
+정적 지도에서 목표마다 경로를 계산해 추종한다. 최종 회전 중에는 위치 도달 상태를 유지하고,
+회전을 마친 뒤 실제 정지 자세를 검사한다. 이동 장애물 감지는 포함하지 않는다.
+취소·리셋·odom 중단은 명령 게이트를 즉시 닫고, 새 목표는 이전 action 종료와 실제 정지 확인 후 실행한다.
+정적 점유/unknown 영역과 Go2 footprint가 겹치는 목표는 거절한다.
+목표 지점에서 회전할 여유를 확보하도록 모든 방향의 footprint를 감싸는 약 0.53m 반경으로 검사한다.
+
+설정은 [go2_nav2.yaml](src/robot_navigation/config/go2_nav2.yaml)에서 수정한다.
+local controller의 Go2 보행 범위를 고려한 footprint는 0.80×0.50m에 padding 0.04m다.
+global planner에는 방향과 보행 여유를 포함한 0.65m 원형 반경을 적용한다.
+Nav2 목표 진입 허용 오차는 위치 0.08m, 방향 0.05rad다. DWB의 `RotateToGoal`이
+목표 근처에서 감속하고 최종 방향을 정렬한다. 전후·횡이동을 모두 사용하며,
+별도 velocity smoother가 출력 가속도를 제한한다.
+최대 회전 속도는 1.0rad/s이며, 급격한 이동·회전 전환을 피하도록 단계별로 정렬한다.
+공통 월드 Go2는 저속 회전 중 물리 절전으로 고정되지 않도록 articulation sleep threshold를 0으로 설정한다.
+Nav2 성공 후에는 게이트를 닫고 실제 속도가 낮은 상태를 1초 확인하며,
+정지 위치 오차가 0.12m 이내이고 방향 오차도 0.12rad 이내일 때 `REACHED`로 표시한다.
+도착 판정 뒤 남는 작은 움직임을 고려해 통합 검사의 0.15m·0.15rad 기준보다 여유를 둔다.
+위치만 맞고 방향이 다르거나, 회전 후 위치가 허용 범위 밖으로 밀리면 성공으로 표시하지 않는다.
+Nav2 성공 후 실제 정지 자세가 이 범위를 벗어나면 최대 5회 재보정한다.
+반복되는 정지 위치 오차는 다음 Nav2 목표 위치에 최대 0.15m, 작은 방향 오차는 최대 ±0.30rad 선보정한다.
+위치 선보정은 지도에서 모든 방향의 footprint가 통과하는 경우만 적용한다.
+최종 도착 판정과 목표 표시는 항상 사용자가 지정한 원래 자세를 기준으로 한다.
+재보정 중에도 취소·리셋·odom 중단은 목표를 해제하며 자동 재개하지 않는다.
+`/waypoint/status`의 `refinements`로 현재 목표의 재보정 횟수를 확인할 수 있다.
+기존 `upstream_flat_6800.pt` 모델과 viewer↔control.py 경로는 유지한다.
+`navigation.launch.py`는 단일 Go2도 검증된 공통 articulation 물리 루프(`shared_world:=true`)로
+실행하므로 이후 다중 로봇 확장과 제어 경로가 같다. 일반 `simulation.launch.py`의 단독 실행 기본값과
+기존 분리 viewer/control 실행 방식은 유지한다.
+
+지도는 [warehouse.yaml](src/robot_navigation/maps/warehouse.yaml)과 PGM/JSON으로 저장된다.
+실제 Isaac warehouse의 757개 활성 collider에서 3–65cm 높이의 충돌 구간을 5cm 격자로 검사했고,
+spawn에 연결된 바닥만 free로 표시한다. JSON에는 USD URL/원본 버전, 높이 구간, origin,
+해상도, collider 수와 이미지 SHA-256을 기록한다. Nav2 footprint inflation은 지도에 미리 굽지 않는다.
+USD 배치/충돌을 바꾸면 Isaac Python으로 다시 생성하고 빌드한다.
+
+```bash
+.conda/isaacsim-5.0/bin/python scripts/export_warehouse_map.py
+bash ros2_ws/build.sh
+```
+
+Nav2 통합 검증은 전용 domain 99에서 한 번에 하나씩 실행한다.
+
+```bash
+source ros2_ws/nav2_env.bash
+/usr/bin/python3 tests/check_navigation_ros.py --backend synthetic
+/usr/bin/python3 tests/check_navigation_ros.py --backend isaac
+/usr/bin/python3 tests/check_waypoint_rviz.py --nav2
+```
+
+두 검사 모두 실제 Humble Nav2를 실행한다. 첫 검사는 단순 운동 모델, 두 번째는 실제 warehouse의
+Go2 정책/물리를 사용한다. ±90도 목표 방향, 같은 위치에서 방향 전환, 지게차 우회,
+정지 후 위치 오차 ≤0.15m·방향 오차 ≤0.15rad, 실제 경로의
+footprint 여유, 점유 목표 거절, 취소·리셋 후 명령 0 유지와 명시적인 새 목표를 확인한다.
+단순 운동 모델에서는 odom 중단도 검사한다. 결과는 `.runtime/navigation/<backend>/result.json`에 저장된다.
+
+2026-10-19 실제 Isaac warehouse 검사에서 네 번의 정지 후 위치 오차는 0.077m, 0.097m, 0.060m, 0.091m,
+방향 오차는 각각 약 2.8°, 4.0°, 3.5°, 2.7°였다. ±90도 이동 목표와 같은 위치에서 180도 방향 전환을 확인했다.
+지게차를 가로지르는 직선 경로 대신 최대 약 1.62m 우회했고, 기록한 로봇 자세 932개에서
+지도상 footprint 충돌을 확인하지 않았다. 취소·리셋 후 명령 0 유지와 새 목표 재주행을 확인했다.
+리셋 1회는 명시적인 서비스 요청이며 자동 전복 리셋은 없었다. 모델 SHA-256은 기존 값과 같았다.
+지도 재생성 시에도 동일한 PGM SHA-256을 얻었다. 원격 RViz의 실제 브라우저 목표 클릭과
+Space 취소/다음 목표 입력도 통과했다.
+WebRTC + RViz web 조합은 별도 150스텝(3초 물리) 실행에서 signaling·RViz HTTP 응답,
+리셋 0회, 정상 보고서 생성과 종료 후 포트/뷰어 정리를 확인했다.
+원격 WebRTC 클라이언트의 실제 영상 수신까지 검사한 것은 아니다.
 
 ## 빌드
 
@@ -87,7 +233,7 @@ RViz가 필요 없으면 어느 모드에서든 `rviz_display:=off`를 지정한
 sudo나 시스템 패키지 변경 없이 최초 한 번 준비한다. Humble desktop과 시스템 그래픽 라이브러리가 필요하다.
 
 ```bash
-bash ros2_ws/setup_rviz_web.sh
+bash ros2_ws/setup.sh --only rviz-web
 bash ros2_ws/build.sh
 source /opt/ros/humble/setup.bash
 source ros2_ws/install/setup.bash
@@ -382,7 +528,8 @@ Lekiwi의 높이 기준은 0.015m이며 기울기 기준은 같다. 이 높이 �
 Go2 공통 장면용 제어기는 기존 48개 관측 순서·지난 액션·관절 순서·0.25 action scale과
 DC motor 설정을 사용한다. `ManagerBasedRLEnv`의 환경 전체 step/reset 대신 공통 루프가 물리를
 진행한다. 기존 단독 실행과 viewer/TCP 경로도 유지한다.
-Hunter2, 경로 추종·충돌 회피·상위 작업 배정은 아직 구현하지 않았다.
+이 공통 실행기의 Hunter2 통합, 경로 추종·충돌 회피·상위 작업 배정은 아직 구현하지 않았다.
+Hunter2 단독 제어·ROS teleop은 [독립 hunter 실행 안내](../hunter/README.md)를 따른다.
 
 ## 실제 폴더와 코드 책임
 
@@ -428,7 +575,7 @@ ros2_ws/src/
 `robot_sim`은 robots 목록이 하나면 기존 Go2/Lekiwi 단독 실행부를 사용하고,
 둘 이상이면 `multi_runtime.py`의 공통 장면을 사용한다. 지원 type은 `go2`, `lekiwi`이며
 중복 id/namespace와 유효하지 않은 설정값을 Isaac 시작 전에 거부한다. 현재 동시 물리 검증 대상은
-Go2 한 대 + Lekiwi 한 대다. 단일 선택 waypoint PD를 제공하며 Hunter2, 경로 계획/fleet는 후속 단계다.
+Go2 한 대 + Lekiwi 한 대다. 단일 선택 waypoint PD를 제공하며 Hunter2의 공통 장면 통합, 경로 계획/fleet는 후속 단계다.
 
 기존 `scripts/go2/ros.py`, `ros_command.py`, `control.py`도 실행할 수 있다.
 `control/go2/`의 정책·키보드·ROS 파일은 workspace 구현을 가져오는 호환 모듈이다.

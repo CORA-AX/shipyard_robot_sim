@@ -1,0 +1,16 @@
+# Separate from every existing simulation/waypoint configuration.
+world:
+  scenario: shipyard
+  seed: 42
+robots:
+  - id: go2_0
+    type: go2
+    namespace: go2_0
+    position: [-16.0, 18.0, 0.4]
+    yaw: 3.141592653589793
+  - id: lekiwi_0
+    type: lekiwi
+    namespace: lekiwi_0
+    # Park beside the south junction, 1.5 m off the patrol centerline.
+    position: [-23.5, -20.0, 0.04]
+    yaw: 3.141592653589793

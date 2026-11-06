@@ -1,0 +1,32 @@
+# Ackermann commissioning, SI units throughout this file.
+# Drive gains and effort limits are read from the saved USD. The rear speed
+# limit below is a runtime override in rad/s; the source USD is never rewritten.
+# Relative to hunter/, independent of the process working directory.
+usd_path: assets/hunter2_sim/hunter2_sim.usd
+base_link: base_link
+# Rolling radius of both saved rear wheel_collider cylinders (front: 0.164158 m).
+wheel_radius: 0.164275
+# Measured from the saved USD joint anchors (not the nominal hardware track).
+wheelbase: 0.65151
+front_track: 0.584
+rear_track: 0.585
+# Equivalent centre steering angle. The inner wheel stays below the USD 0.58 rad limit.
+max_steering_angle: 0.46
+# Maximum individual steering target rate in rad/s; saved USD allows 1 rad/s.
+max_steering_rate: 0.8
+max_speed: 1.0
+max_acceleration: 0.5
+# At 1 m/s, straight driving needs 6.09 rad/s and the outer rear wheel needs
+# about 7.44 rad/s at full steering. This limit includes turning headroom.
+rear_velocity_limit: 8.0
+
+# Left then right. Signs are verified against joint frames when loading USD.
+steering:
+  - {joint: front_steer_left_joint, sign: 1}
+  - {joint: front_steer_right_joint, sign: 1}
+rear_wheels:
+  - {joint: left_rear_joint, sign: 1}
+  - {joint: right_rear_joint, sign: 1}
+passive_front_wheels:
+  - front_left_wheel_joint
+  - front_right_wheel_joint

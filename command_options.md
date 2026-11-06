@@ -175,7 +175,7 @@ launch의 `display:=headless`, `robots_file:=/path/robots.yaml`, `steps:=900`,
 
 ```bash
 # 원격 도구 최초 준비: sudo 없이 프로젝트 내부에 설치
-bash ros2_ws/setup_rviz_web.sh
+bash ros2_ws/setup.sh --only rviz-web
 
 # 이미 실행 중인 시뮬레이터에 RViz만 연결
 ros2 launch robot_bringup rviz.launch.py rviz_display:=web
@@ -218,6 +218,26 @@ ros2 run robot_control waypoint --robots-file "$PWD/ros2_ws/src/robot_bringup/co
 | `--report` | 미설정 | 목표 수락/거부 횟수·선택 전환·상태 이력 JSON |
 
 PD는 단일 목표를 직접 추종하며 장애물 회피·경로 계획은 포함하지 않는다.
+
+### Go2 Nav2 실행
+
+Go2 한 대의 warehouse 정적 지도 기반 장애물 우회를 사용하려면 다음을 실행한다.
+PD waypoint/teleop는 종료한다. ROS 터미널에서 Conda 활성화는 필요 없다.
+
+```bash
+bash ros2_ws/setup.sh  # 최초 1회: Nav2 + 원격 RViz, 프로젝트 내부 설치
+bash ros2_ws/build.sh
+source ros2_ws/nav2_env.bash
+ros2 launch robot_bringup navigation.launch.py display:=webrtc server_ip:=192.168.1.149
+```
+
+로컬 실행은 `display:=local`, 화면 없는 실행은 `display:=headless rviz_display:=off`다.
+RViz **2D Goal Pose**가 `navigation_robot:=go2_0`의 Nav2 action으로 전달된다.
+클릭 위치와 드래그한 화살표 방향을 모두 추종한다. 정지 후 위치 오차 ≤0.12m,
+방향 오차 ≤0.12rad일 때 `REACHED`이며, `/waypoint/status`에서 `yaw_error`를 확인할 수 있다.
+실행 중인 시뮬레이터에 연결할 때는 `start_simulator:=false`와 같은 `robots_file`을 지정한다.
+취소는 `ros2 service call /waypoint/cancel std_srvs/srv/Trigger '{}'`로 요청한다.
+지도·추종기·터미널 실행·한계는 [workspace Nav2 안내](ros2_ws/README.md#go2-nav2-navigation)를 참고한다.
 
 ## ROS Go2 독립 실행
 

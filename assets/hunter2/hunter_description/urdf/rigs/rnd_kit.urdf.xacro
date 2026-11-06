@@ -1,0 +1,37 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://wiki.ros.org/xacro">
+
+  <!-- Link Camera holder unit to rear mount -->
+  <link name="rnd_kit_link">
+    <visual>
+      <geometry>
+        <mesh
+          filename="package://hunter_description/meshes/accessories/fixtures/rnd_kit.dae"
+          scale="0.01 0.01 0.01" />
+      </geometry>
+    </visual>
+    <collision>
+      <geometry>
+        <mesh
+          filename="package://hunter_description/meshes/accessories/fixtures/rnd_kit.stl"
+          scale="0.01 0.01 0.01" />
+      </geometry>
+    </collision>
+  </link>
+
+  <joint name="rnd_kit_link_joint" type="fixed">
+    <parent link="base_link" />
+    <child link="rnd_kit_link" />
+    <origin xyz="0.22 0 0.015" rpy="0 0 0" />
+  </joint>
+
+  <!-- Realsense -->
+  <xacro:include filename="$(find hunter_description)/urdf/accessories/realsensed435i.xacro" />
+
+  <!-- Ouster -->
+  <xacro:include filename="$(find hunter_description)/urdf/accessories/ouster.xacro" />
+
+  <!-- Drotek -->
+  <xacro:include filename="$(find hunter_description)/urdf/accessories/drotek.xacro" />
+
+</robot>

@@ -14,7 +14,9 @@ def default_project_root():
 
 
 def launch_simulator(context):
-    from launch.actions import ExecuteProcess
+    from launch.actions import EmitEvent, ExecuteProcess, RegisterEventHandler
+    from launch.event_handlers import OnProcessExit
+    from launch.events import Shutdown
     from launch.substitutions import LaunchConfiguration
     def value(name):
         return LaunchConfiguration(name).perform(context)
@@ -37,6 +39,8 @@ def launch_simulator(context):
         command += ['--report', str(Path(value('report')).resolve())]
     if value('checkpoint'):
         command += ['--checkpoint', str(Path(value('checkpoint')).resolve())]
+    if value('shared_world').lower() == 'true':
+        command += ['--shared-world']
     mode = value('display')
     if mode == 'headless':
         command += ['--headless']
@@ -54,5 +58,7 @@ def launch_simulator(context):
     # Validate the viewer before starting the expensive simulator process.
     from .rviz_launch import launch_rviz
     viewers = launch_rviz(context, simulation_display=mode)
-    return [ExecuteProcess(cmd=command, cwd=str(root), env=environment,
-                           output='screen', sigterm_timeout='15', sigkill_timeout='15'), *viewers]
+    simulator = ExecuteProcess(cmd=command, cwd=str(root), env=environment,
+                               output='screen', sigterm_timeout='15', sigkill_timeout='15')
+    return [RegisterEventHandler(OnProcessExit(target_action=simulator,
+                on_exit=[EmitEvent(event=Shutdown(reason='Simulator exited'))])), simulator, *viewers]

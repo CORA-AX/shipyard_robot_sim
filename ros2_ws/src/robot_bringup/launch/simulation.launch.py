@@ -23,6 +23,7 @@ def generate_launch_description():
         'steps': '0',
         'report': '',
         'checkpoint': '',
+        'shared_world': 'false',
         'server_ip': os.environ.get('PUBLIC_IP', ''),
     }
     return LaunchDescription([*[DeclareLaunchArgument(name, default_value=value)

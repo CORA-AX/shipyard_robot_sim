@@ -62,11 +62,11 @@ def web_tools(root):
     required = [tools[name] for name in ('Xvfb', 'x11vnc', 'openbox', 'wm_config')]
     required += [tools['web'] / 'vnc.html', tools['python'] / 'websockify/__main__.py']
     if not all(path.is_file() for path in required):
-        raise ValueError('RViz web tools missing. Run: bash ros2_ws/setup_rviz_web.sh')
+        raise ValueError('RViz web tools missing. Run: bash ros2_ws/setup.sh --only rviz-web')
     return tools
 
 
-def make_config(world, robot_id, template, width, height, goal_topic='/waypoint/goal_pose'):
+def make_config(world, robot_id, template, width, height, goal_topic='/waypoint/goal_pose', navigation=False):
     robots = world['robots']
     selected = next((robot for robot in robots if robot['robot_id'] == robot_id), None) if robot_id else robots[0]
     if selected is None:
@@ -96,6 +96,26 @@ def make_config(world, robot_id, template, width, height, goal_topic='/waypoint/
         'Enabled': True,
         'Topic': {'Value': '/waypoint/markers', 'Reliability Policy': 'Reliable',
                   'Durability Policy': 'Transient Local', 'Depth': 1}})
+    if navigation:
+        manager['Displays'].append({
+            'Class': 'rviz_default_plugins/Map', 'Name': 'Warehouse occupancy map',
+            'Enabled': True, 'Alpha': .65, 'Draw Behind': True,
+            'Topic': {'Value': '/map', 'Reliability Policy': 'Reliable',
+                      'Durability Policy': 'Transient Local', 'Depth': 1}})
+        for robot in robots:
+            if robot['robot_type'] != 'go2':
+                continue
+            prefix = '/' + robot['namespace']
+            manager['Displays'].append({
+                'Class': 'rviz_default_plugins/Path', 'Name': robot['robot_id'] + ' Nav2 path',
+                'Enabled': True, 'Color': '80; 255; 120', 'Line Style': 'Billboards', 'Line Width': .04,
+                'Topic': {'Value': prefix + '/plan', 'Reliability Policy': 'Reliable',
+                          'Durability Policy': 'Volatile', 'Depth': 1}})
+            manager['Displays'].append({
+                'Class': 'rviz_default_plugins/Map', 'Name': robot['robot_id'] + ' local costmap',
+                'Enabled': False, 'Alpha': .4, 'Color Scheme': 'costmap',
+                'Topic': {'Value': prefix + '/local_costmap/costmap', 'Reliability Policy': 'Reliable',
+                          'Durability Policy': 'Transient Local', 'Depth': 1}})
     config['Window Geometry'].update(Width=width - 40, Height=height - 60, X=10, Y=10)
     return config, goal_topic
 
@@ -212,7 +232,8 @@ class Viewer:
         world = load_world_config(args.robots_file)
         from ament_index_python.packages import get_package_share_directory
         template = Path(get_package_share_directory('robot_bringup')) / 'config/robots.rviz'
-        config, goal_topic = make_config(world, args.robot, template, width, height, args.goal_topic)
+        config, goal_topic = make_config(world, args.robot, template, width, height, args.goal_topic,
+                                        getattr(args, 'navigation', False))
         config_path = self.directory / 'robots.rviz'
         config_path.write_text(yaml.safe_dump(config, sort_keys=False))
         env = system_environment()
@@ -274,6 +295,7 @@ def main():
     parser.add_argument('--display', choices=('local', 'web'), default='local')
     parser.add_argument('--robot', default='')
     parser.add_argument('--goal-topic', default='/waypoint/goal_pose')
+    parser.add_argument('--navigation', action='store_true', help='Show warehouse map and Nav2 paths.')
     parser.add_argument('--port', type=int, default=6080)
     parser.add_argument('--resolution', default='1440x900')
     parser.add_argument('--rendering', choices=('auto', 'software', 'native'), default='auto')

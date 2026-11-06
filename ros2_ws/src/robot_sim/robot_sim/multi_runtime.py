@@ -157,6 +157,9 @@ def run_ros(app, args, root, report):
         step, started, physics_start = 0, time.monotonic(), sim.current_time
         with torch.inference_mode():
             while app.is_running() and all(i.bridge.context.ok() for i in instances) and (not args.steps or step < args.steps):
+                if getattr(args, 'stop_requested', False):
+                    report['stopped_by_user'] = True
+                    break
                 tick = time.monotonic()
                 commands = []
                 for instance in instances:

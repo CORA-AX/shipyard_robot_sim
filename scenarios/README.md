@@ -1,5 +1,9 @@
 # 공통 시나리오
 
+로컬 조선소 환경은 `--scenario shipyard`로 실행한다.
+배치·조명·충돌 설정의 저장 방법과 변환 명령은
+[조선소 환경 안내](../assets/environments/shipyard/README.md)를 참고한다.
+
 배경·장애물·배치와 로봇별 환경 연결을 관리한다. 로봇 모델 파일은 `assets/<robot>/`,
 향후 제어·상태 adapter는 `control/<robot>/`, 시각화는 `scripts/visualization/`에서 관리한다.
 

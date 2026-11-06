@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<robot name="accessories"
+  xmlns:xacro="http://ros.org/wiki/xacro">
+
+  <!-- Robot -->
+  <xacro:include filename="$(find hunter_description)/urdf/robot/hunter2.xacro" />
+
+  <!-- Rigs -->
+  <xacro:if value="$(optenv HUNTER_RIG 1)">
+    <xacro:include filename="$(find hunter_description)/urdf/rigs/rnd_kit.urdf.xacro" />
+  </xacro:if>
+
+</robot>

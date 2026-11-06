@@ -148,6 +148,14 @@ def worker():
     device = args.device
     app = AppLauncher(args).app
     args.device = device
+    # Finish the current control boundary and write the report before Kit closes.
+    # AppLauncher's default SIGTERM closes Kit immediately, bypassing finally.
+    import signal
+    args.stop_requested = False
+    def request_stop(*_):
+        args.stop_requested = True
+    signal.signal(signal.SIGINT, request_stop)
+    signal.signal(signal.SIGTERM, request_stop)
     report = {'passed': False, 'scenario': args.scenario, 'cmd_vel_topic': args.cmd_vel_topic,
               'ros_domain_id': args.ros_domain_id, 'command_timeout': args.command_timeout}
     try:

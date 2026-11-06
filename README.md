@@ -7,7 +7,9 @@ Isaac Sim 5.0 + Isaac Lab v2.2.1 기반 로봇 시뮬레이션 프로젝트다.
 [warehouse 자산 출처·시작 위치·실행 안내](assets/environments/warehouse/README.md)를 참고한다.
 현재 Go2 정책 제어, Lekiwi 이동 베이스 제어 및 ROS workspace의 공통 warehouse에서
 Go2+Lekiwi 동시 제어와 단일 선택 PD waypoint 추종을 지원한다.
-Hunter2 제어와 경로 계획·상위 플래너는 후속 단계다.
+Go2 한 대의 Nav2 warehouse 경로 계획·추종은 [ROS workspace 실행 안내](ros2_ws/README.md#go2-nav2-navigation)를 따른다.
+Hunter2의 독립 Ackermann 제어와 ROS 키보드 주행은 [hunter 실행 안내](hunter/README.md)를 따른다.
+다중 로봇 navigation·상위 플래너는 후속 단계다.
 
 기본 분리 실행에서는 **viewer가 환경·로봇·물리를 관리하고, 별도 control 프로세스가 정책을 실행한다.**
 ROS 직접 제어는 `scripts/go2/ros.py`가 정책과 물리를 함께 실행한다.
@@ -134,7 +136,7 @@ base TF와 공통 `/clock`도 발행한다. `display:=headless`로 화면 없이
 [workspace 실행·설정·검사 안내](ros2_ws/README.md)를 참고한다.
 
 로컬 모드는 RViz 창도 함께 실행한다. WebRTC 모드는 최초 한 번
-`bash ros2_ws/setup_rviz_web.sh`로 원격 도구를 준비하면 RViz를 브라우저에서 볼 수 있다.
+`bash ros2_ws/setup.sh`로 원격 도구를 준비하면 RViz를 브라우저에서 볼 수 있다.
 이미 실행 중인 시뮬레이터에는 다음 명령으로 RViz만 연결한다.
 
 ```bash
@@ -458,7 +460,8 @@ commit과 원본 파일의 SHA-256을 확인하므로 해당 저장소와 Git me
 
 `scenarios/`는 공통 장면과 로봇별 환경 연결, `assets/environments/`는 공통 배경 자산을 관리한다.
 `control/go2/`는 정책 제어·환경 실행·상태 검증 코드를 관리한다.
-`control/{hunter2,omni}`는 향후 제어 adapter용 관리 문서를 두었다.
+`hunter/`는 Hunter 전용 제어·ROS 통신·시뮬레이션·운용 USD·테스트를 관리한다.
+`control/omni`는 향후 제어 adapter용 관리 문서를 두었다.
 `ros2_ws`는 Go2 ROS 패키지·공통 실행·상태 연결을 관리한다. `navigation`은 향후 작업용 디렉터리다.
 [시나리오 관리 기준](scenarios/README.md)과 [로봇 제어 관리 기준](control/README.md)을 참고한다.
 상위 navigation은 Goal/Path와 공통 상태 인터페이스를 사용하고 로봇별 adapter를 둔다.
@@ -466,5 +469,6 @@ ROS workspace의 로봇별 속도 제어기·공통 실행부·PD waypoint follo
 Space로 한 로봇씩 선택하며 경로 계획·장애물 회피·상위 플래너는 후속 단계다.
 Go2는 `scripts/viewer.py --robot go2`로 생성하고 `scripts/go2/control.py`로 제어한다.
 
-**HUNTER 상태: 조향축·중복 형상 교정 및 정적 검증 완료, Isaac import·물리/주행 검증 미완료.**
-독립 조향 운동 검증을 정상 Ackermann 주행 controller 완성으로 해석하지 않는다.
+**HUNTER 상태: Ackermann 제어·ROS teleop 구현 및 CPU 검사 완료.**
+`hunter/`로 분리한 GUI의 모델 로딩을 확인했으며, 새 경로의 전후진·조향 확인은
+[Hunter 실행 안내](hunter/README.md)를 따른다. 경로 계획·장애물 회피는 후속 단계다.

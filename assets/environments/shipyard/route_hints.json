@@ -1,0 +1,384 @@
+{
+  "schema_version": 1,
+  "units": "meters",
+  "up_axis": "Z",
+  "coordinate_frame": "shipyard world.usda /World local; apply environment transform when instanced",
+  "z_semantics": "support surface, not robot base or spawn height",
+  "automatic_navigation_enabled": false,
+  "notes": [
+    "Route hints only; validate footprint, turning radius, controller and grade capability per robot.",
+    "Stair segments are discrete treads, never interpolate as a smooth ramp.",
+    "No Nav2 map, controller, robot spawn or scenario registry is modified."
+  ],
+  "stairs": {
+    "riser_m": 0.15,
+    "tread_m": 0.4,
+    "count": 8,
+    "width_m": 2.4
+  },
+  "nodes": {
+    "yard_start": [
+      -16,
+      18,
+      0
+    ],
+    "north_junction": [
+      -25,
+      18,
+      0
+    ],
+    "north_turn": [
+      -37,
+      18,
+      0
+    ],
+    "north_toe": [
+      -37,
+      14,
+      0
+    ],
+    "deck_north": [
+      -37,
+      2,
+      1.2
+    ],
+    "deck_access": [
+      -37,
+      -1,
+      1.2
+    ],
+    "deck_south": [
+      -37,
+      -4,
+      1.2
+    ],
+    "south_toe": [
+      -37,
+      -16,
+      0
+    ],
+    "south_turn": [
+      -37,
+      -20,
+      0
+    ],
+    "south_junction": [
+      -25,
+      -20,
+      0
+    ],
+    "bypass_access": [
+      -25,
+      -1,
+      0
+    ],
+    "stair_toe": [
+      -30.6,
+      -1,
+      0
+    ],
+    "stair_top": [
+      -34.2,
+      -1,
+      1.2
+    ],
+    "step_01": [
+      -31.0,
+      -1,
+      0.15
+    ],
+    "step_02": [
+      -31.4,
+      -1,
+      0.3
+    ],
+    "step_03": [
+      -31.8,
+      -1,
+      0.45
+    ],
+    "step_04": [
+      -32.2,
+      -1,
+      0.6
+    ],
+    "step_05": [
+      -32.6,
+      -1,
+      0.75
+    ],
+    "step_06": [
+      -33.0,
+      -1,
+      0.9
+    ],
+    "step_07": [
+      -33.4,
+      -1,
+      1.05
+    ],
+    "step_08": [
+      -33.8,
+      -1,
+      1.2
+    ]
+  },
+  "edges": [
+    {
+      "start": "yard_start",
+      "end": "north_junction",
+      "bidirectional": true,
+      "kind": "flat",
+      "width_m": 4,
+      "max_grade": 0,
+      "requires": []
+    },
+    {
+      "start": "north_junction",
+      "end": "north_turn",
+      "bidirectional": true,
+      "kind": "flat",
+      "width_m": 6,
+      "max_grade": 0,
+      "requires": []
+    },
+    {
+      "start": "north_turn",
+      "end": "north_toe",
+      "bidirectional": true,
+      "kind": "flat",
+      "width_m": 6,
+      "max_grade": 0,
+      "requires": []
+    },
+    {
+      "start": "north_toe",
+      "end": "deck_north",
+      "bidirectional": true,
+      "kind": "ramp",
+      "width_m": 6,
+      "max_grade": 0.1,
+      "requires": [
+        "slope_10_percent"
+      ]
+    },
+    {
+      "start": "deck_north",
+      "end": "deck_access",
+      "bidirectional": true,
+      "kind": "flat",
+      "width_m": 6,
+      "max_grade": 0,
+      "requires": []
+    },
+    {
+      "start": "deck_access",
+      "end": "deck_south",
+      "bidirectional": true,
+      "kind": "flat",
+      "width_m": 6,
+      "max_grade": 0,
+      "requires": []
+    },
+    {
+      "start": "deck_south",
+      "end": "south_toe",
+      "bidirectional": true,
+      "kind": "ramp",
+      "width_m": 6,
+      "max_grade": 0.1,
+      "requires": [
+        "slope_10_percent"
+      ]
+    },
+    {
+      "start": "south_toe",
+      "end": "south_turn",
+      "bidirectional": true,
+      "kind": "flat",
+      "width_m": 6,
+      "max_grade": 0,
+      "requires": []
+    },
+    {
+      "start": "south_turn",
+      "end": "south_junction",
+      "bidirectional": true,
+      "kind": "flat",
+      "width_m": 6,
+      "max_grade": 0,
+      "requires": []
+    },
+    {
+      "start": "south_junction",
+      "end": "bypass_access",
+      "bidirectional": true,
+      "kind": "flat",
+      "width_m": 6,
+      "max_grade": 0,
+      "requires": []
+    },
+    {
+      "start": "bypass_access",
+      "end": "north_junction",
+      "bidirectional": true,
+      "kind": "flat",
+      "width_m": 6,
+      "max_grade": 0,
+      "requires": []
+    },
+    {
+      "start": "bypass_access",
+      "end": "stair_toe",
+      "bidirectional": true,
+      "kind": "flat",
+      "width_m": 2.4,
+      "max_grade": 0,
+      "requires": []
+    },
+    {
+      "start": "stair_toe",
+      "end": "step_01",
+      "bidirectional": true,
+      "kind": "stairs",
+      "width_m": 2.4,
+      "max_grade": null,
+      "requires": [
+        "stair_climbing"
+      ]
+    },
+    {
+      "start": "step_01",
+      "end": "step_02",
+      "bidirectional": true,
+      "kind": "stairs",
+      "width_m": 2.4,
+      "max_grade": null,
+      "requires": [
+        "stair_climbing"
+      ]
+    },
+    {
+      "start": "step_02",
+      "end": "step_03",
+      "bidirectional": true,
+      "kind": "stairs",
+      "width_m": 2.4,
+      "max_grade": null,
+      "requires": [
+        "stair_climbing"
+      ]
+    },
+    {
+      "start": "step_03",
+      "end": "step_04",
+      "bidirectional": true,
+      "kind": "stairs",
+      "width_m": 2.4,
+      "max_grade": null,
+      "requires": [
+        "stair_climbing"
+      ]
+    },
+    {
+      "start": "step_04",
+      "end": "step_05",
+      "bidirectional": true,
+      "kind": "stairs",
+      "width_m": 2.4,
+      "max_grade": null,
+      "requires": [
+        "stair_climbing"
+      ]
+    },
+    {
+      "start": "step_05",
+      "end": "step_06",
+      "bidirectional": true,
+      "kind": "stairs",
+      "width_m": 2.4,
+      "max_grade": null,
+      "requires": [
+        "stair_climbing"
+      ]
+    },
+    {
+      "start": "step_06",
+      "end": "step_07",
+      "bidirectional": true,
+      "kind": "stairs",
+      "width_m": 2.4,
+      "max_grade": null,
+      "requires": [
+        "stair_climbing"
+      ]
+    },
+    {
+      "start": "step_07",
+      "end": "step_08",
+      "bidirectional": true,
+      "kind": "stairs",
+      "width_m": 2.4,
+      "max_grade": null,
+      "requires": [
+        "stair_climbing"
+      ]
+    },
+    {
+      "start": "step_08",
+      "end": "stair_top",
+      "bidirectional": true,
+      "kind": "stairs",
+      "width_m": 2.4,
+      "max_grade": null,
+      "requires": [
+        "stair_climbing"
+      ]
+    },
+    {
+      "start": "stair_top",
+      "end": "deck_access",
+      "bidirectional": true,
+      "kind": "flat",
+      "width_m": 2.4,
+      "max_grade": 0,
+      "requires": []
+    }
+  ],
+  "suggested_routes": {
+    "service_loop": [
+      "yard_start",
+      "north_junction",
+      "north_turn",
+      "north_toe",
+      "deck_north",
+      "deck_access",
+      "deck_south",
+      "south_toe",
+      "south_turn",
+      "south_junction",
+      "bypass_access",
+      "north_junction"
+    ],
+    "flat_only": [
+      "yard_start",
+      "north_junction",
+      "bypass_access",
+      "south_junction"
+    ],
+    "stair_access": [
+      "bypass_access",
+      "stair_toe",
+      "step_01",
+      "step_02",
+      "step_03",
+      "step_04",
+      "step_05",
+      "step_06",
+      "step_07",
+      "step_08",
+      "stair_top",
+      "deck_access"
+    ]
+  }
+}

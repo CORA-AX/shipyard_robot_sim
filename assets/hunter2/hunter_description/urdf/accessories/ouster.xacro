@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://wiki.ros.org/xacro">
+
+  <!-- Ouster -->
+  <link name="os_sensor">
+    <visual>
+      <geometry>
+        <mesh filename="package://hunter_description/meshes/accessories/sensors/os1_64.dae" scale="0.01 0.01 0.01" />
+      </geometry>
+    </visual>
+    <collision>
+      <geometry>
+        <mesh filename="package://hunter_description/meshes/accessories/sensors/os1_64.dae" scale="0.01 0.01 0.01" />
+      </geometry>
+    </collision>
+  </link>
+
+  <joint name="ouster_joint" type="fixed">
+    <parent link="rnd_kit_link" />
+    <child link="os_sensor" />
+    <origin xyz="0 0 0.22" rpy="0 0 0" />
+  </joint>
+
+</robot>

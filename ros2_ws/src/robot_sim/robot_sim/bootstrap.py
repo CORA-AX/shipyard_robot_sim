@@ -11,6 +11,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--project-root', type=Path, required=True)
     parser.add_argument('--robots-file', type=Path, required=True)
+    parser.add_argument('--shared-world', action='store_true', help='Use the common articulation runtime even for one robot.')
     args, remaining = parser.parse_known_args()
     root = args.project_root.resolve()
     if not (root / 'assets/go2/config/sources.lock.json').is_file():
@@ -18,7 +19,7 @@ def main():
     world = load_world_config(args.robots_file)
     os.environ['WAREHOUSE_SIM_ROOT'] = str(root)
     sys.path.insert(0, str(root))
-    if len(world['robots']) > 1:
+    if len(world['robots']) > 1 or args.shared_world:
         sys.argv = ['robot_sim.launcher', '--robot-type', 'multi',
                     '--robots-file', str(args.robots_file.resolve()), *remaining]
     else:

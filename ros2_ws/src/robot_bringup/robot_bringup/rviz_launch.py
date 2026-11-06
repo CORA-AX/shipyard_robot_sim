@@ -4,11 +4,12 @@ from pathlib import Path
 from .rviz_view import resolve_display, system_environment, validate_options, web_tools
 
 
-def rviz_arguments():
+def rviz_arguments(navigation=False):
     from launch.actions import DeclareLaunchArgument
     defaults = {'rviz_display': 'auto', 'rviz_robot': '', 'rviz_port': '6080',
                 'rviz_resolution': '1440x900', 'rviz_rendering': 'auto',
-                'rviz_goal_topic': '/waypoint/goal_pose'}
+                'rviz_goal_topic': '/waypoint/goal_pose',
+                'rviz_navigation': 'true' if navigation else 'false'}
     return [DeclareLaunchArgument(key, default_value=value) for key, value in defaults.items()]
 
 
@@ -41,7 +42,8 @@ def launch_rviz(context, *, simulation_display=None):
              '--robot', value('rviz_robot'), '--port', value('rviz_port'),
              '--goal-topic', value('rviz_goal_topic'),
              '--resolution', value('rviz_resolution'), '--rendering', value('rviz_rendering'),
-             '--ros-domain-id', value('ros_domain_id')],
+             '--ros-domain-id', value('ros_domain_id'),
+             *(['--navigation'] if value('rviz_navigation').lower() == 'true' else [])],
         cwd=str(root), env=environment, output='screen',
         sigterm_timeout='10', sigkill_timeout='5')
     def failed(event, context):

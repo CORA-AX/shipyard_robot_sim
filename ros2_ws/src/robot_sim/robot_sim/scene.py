@@ -25,6 +25,9 @@ def spawn_robot(root, config):
     from assets.go2.config.robot_cfg import GO2_CFG
     from isaaclab.assets import Articulation
     cfg = GO2_CFG.copy()
+    # Keep the continuously controlled articulation awake during slow turns;
+    # the authored sleep threshold can freeze it under a nonzero policy command.
+    cfg.spawn.articulation_props.sleep_threshold = 0.0
     cfg.prim_path = prim_path
     cfg.init_state.pos = tuple(config['position'])
     cfg.init_state.rot = (math.cos(config['yaw'] / 2), 0., 0., math.sin(config['yaw'] / 2))

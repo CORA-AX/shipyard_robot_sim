@@ -18,8 +18,8 @@ control/
   control_channel.py           viewer·제어기 간 로컬 통신과 응답 검사
   go2/policy.py                별도 프로세스용 정책 추론 (PyTorch)
   go2/simulation.py            viewer 내부 Go2 생성·물리 진행·제어 대기
-  hunter2/                     향후 차량 제어 adapter (현재 README만 있음)
   omni/                        향후 전방향 제어 adapter (현재 README만 있음)
+hunter/                        Hunter 전용 제어·ROS teleop·시뮬레이션·운용 USD·테스트
 simulation/                   향후 시뮬레이션 실행 계층 (현재 빈 폴더)
 scenarios/
   registry.py                  공통 장면 및 Go2 환경 등록
@@ -42,6 +42,8 @@ third_party/                   고정된 외부 소스; 로봇별 시나리오�
 `scenarios`는 공통 장면과 로봇 연결, `scripts`는 사용자 명령을 담당한다.
 URDF는 로봇 원본, USD는 Isaac Sim 자산, Python은 장면 구성·제어 연결에 사용한다.
 `assets/go2/scenarios` 및 이전 viewer 호환 파일은 삭제됐으므로 새 경로를 사용한다.
+Hunter 실행·개발은 [hunter/README.md](hunter/README.md)를 따른다.
+기존 모델과 모델 관리 도구는 각각 `assets/hunter2/`, `scripts/hunter2/`에 유지한다.
 
 | 변경하려는 내용 | 수정 위치 |
 |---|---|
@@ -68,7 +70,7 @@ Go2는 `robot_control/go2/controller.py`의 `ArticulationGo2Controller`, Lekiwi�
 RViz 표시는 `robot_bringup/rviz_launch.py`와 `rviz_view.py`가 담당한다.
 `simulation.launch.py`는 Isaac의 `display`와 별도로 `rviz_display`를 해석하며,
 `rviz.launch.py`는 실행 중인 시뮬레이터에 RViz만 연결한다.
-원격 화면 도구는 `ros2_ws/setup_rviz_web.sh`로 `.runtime/rviz_web/sysroot`에 설치한다.
+원격 화면 도구는 `ros2_ws/setup.sh`로 `.runtime/rviz_web/sysroot`에 설치한다.
 원격 세션마다 Xvfb display와 Xauthority를 따로 만들고, openbox·x11vnc·websockify·RViz를
 감독한다. VNC/HTTP는 loopback에만 바인딩하고 SSH 터널로 접속한다.
 종료 시 세션에서 생성한 프로세스 그룹만 정리한다. 로컬 모드는 기존 데스크톱을 사용한다.

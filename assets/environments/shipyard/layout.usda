@@ -1,0 +1,33 @@
+#usda 1.0
+(
+    defaultPrim = "World"
+    metersPerUnit = 1
+    upAxis = "Z"
+)
+
+def Xform "World"
+{
+    def Xform "Shipyard" (
+        prepend references = @./models/shipyard.usd@
+    )
+    {
+        float3 xformOp:rotateXYZ = (0, 0, 0)
+        float3 xformOp:scale = (1, 1, 1)
+        double3 xformOp:translate = (0, 0, 0)
+        uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:rotateXYZ", "xformOp:scale"]
+    }
+
+    def DomeLight "SkyLight"
+    {
+        float inputs:intensity = 750
+    }
+
+    def Camera "Overview"
+    {
+        float2 clippingRange = (0.1, 1000)
+        float focalLength = 24
+        matrix4d xformOp:transform = ( (-0.7834976790895337, 0.621394711002044, -2.7755575615628907e-17, 0), (-0.3066391638581373, -0.3866319892124339, 0.8697632598046543, 0), (0.540466289466509, 0.681457495414294, 0.49346922081724737, -0), (48.00000000000001, 58.00000000000001, 42.00000000000001, 1) )
+        uniform token[] xformOpOrder = ["xformOp:transform"]
+    }
+}
+

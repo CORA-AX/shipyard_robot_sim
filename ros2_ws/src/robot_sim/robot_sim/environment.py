@@ -13,6 +13,10 @@ def isaac_environment(python, environment=None, python_paths=()):
     sourced = [p for p in env.get('AMENT_PREFIX_PATH', '').split(os.pathsep) if p]
     sourced += [p for p in env.get('COLCON_PREFIX_PATH', '').split(os.pathsep) if p]
     sourced += ['/opt/ros']
+    # Rootless navigation also has non-ROS libraries beside its ROS prefix.
+    for path in list(sourced):
+        if path.endswith('/.runtime/nav2/sysroot/opt/ros/humble'):
+            sourced.append(path.removesuffix('/opt/ros/humble'))
     def external_ros(path):
         return any(path == p or path.startswith(p.rstrip('/') + '/') for p in sourced)
     libraries = [p for p in env.get('LD_LIBRARY_PATH', '').split(os.pathsep)

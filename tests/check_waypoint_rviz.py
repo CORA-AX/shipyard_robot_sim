@@ -1,4 +1,5 @@
 """Real browser RViz clicks -> selected PD robot, then PTY Space -> second robot, without RViz restart."""
+import argparse
 import json
 import os
 from pathlib import Path
@@ -19,17 +20,23 @@ from check_waypoint_ros import SyntheticWorld
 
 
 def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--nav2', action='store_true', help='Exercise single-Go2 Nav2 and terminal cancellation instead of PD switching.')
+    args = parser.parse_args()
     os.environ['ROS_DOMAIN_ID'] = '98'
     import rclpy
     from geometry_msgs.msg import Twist
     from rclpy.qos import QoSProfile, DurabilityPolicy
     from std_msgs.msg import String
     from visualization_msgs.msg import MarkerArray
-    output = ROOT / '.runtime/waypoint/browser'
+    output = ROOT / ('.runtime/navigation/browser' if args.nav2 else '.runtime/waypoint/browser')
     output.mkdir(parents=True, exist_ok=True)
     result = {'passed': False}
     (output / 'result.json').write_text(json.dumps(result) + '\n')
     config = yaml.safe_load((ROOT / 'ros2_ws/src/robot_bringup/config/go2_lekiwi.yaml').read_text())
+    if args.nav2:
+        config['robots'] = [config['robots'][0]]
+        config['robots'][0]['position'] = [0.,0.,.4]
     for robot in config['robots']:
         robot['namespace'] = 'waypoint_browser/' + robot['id']
     robots_file = output / 'robots.yaml'
@@ -37,11 +44,14 @@ def main():
     rclpy.init(args=[])
     node = rclpy.create_node('waypoint_browser_check')
     world = SyntheticWorld(config)
-    statuses, markers, commands = [], [], {r['id']: [] for r in config['robots']}
+    statuses, markers, commands, plans = [], [], {r['id']: [] for r in config['robots']}, []
     transient = QoSProfile(depth=10, durability=DurabilityPolicy.TRANSIENT_LOCAL)
     subscriptions = [
         node.create_subscription(String, '/waypoint/status', lambda msg: statuses.append(json.loads(msg.data)), transient),
         node.create_subscription(MarkerArray, '/waypoint/markers', markers.append, transient)]
+    if args.nav2:
+        from nav_msgs.msg import Path as RosPath
+        subscriptions.append(node.create_subscription(RosPath, '/waypoint_browser/go2_0/plan', plans.append, 10))
     for robot in config['robots']:
         identity = robot['id']
         subscriptions.append(node.create_subscription(Twist, '/' + robot['namespace'] + '/cmd_vel',
@@ -72,14 +82,21 @@ def main():
     try:
         before = set((ROOT / '.runtime/rviz').glob('*/session.json'))
         launch(['ros2', 'launch', 'robot_bringup', 'rviz.launch.py', 'rviz_display:=web',
-                'rviz_port:=6082', 'ros_domain_id:=98', f'robots_file:={robots_file}'], 'rviz')
-        launch(['ros2', 'run', 'robot_control', 'waypoint', '--robots-file', str(robots_file)], 'controller', slave)
+                'rviz_port:=6082', 'ros_domain_id:=98', f'robots_file:={robots_file}',
+                'rviz_navigation:='+str(args.nav2).lower()], 'rviz')
+        if args.nav2:
+            launch(['ros2','launch','robot_bringup','navigation.launch.py','start_simulator:=false',
+                    'goal_selector:=false','rviz_display:=off','ros_domain_id:=98',f'robots_file:={robots_file}'], 'nav2')
+        launch(['ros2', 'run', 'robot_navigation' if args.nav2 else 'robot_control',
+                'goal_selector' if args.nav2 else 'waypoint', '--robots-file', str(robots_file)], 'controller', slave)
         def ready():
             for path in set((ROOT / '.runtime/rviz').glob('*/session.json')) - before:
                 data = json.loads(path.read_text())
                 if data['state'] == 'ready':
                     return data
         wait(lambda: ready() and statuses)
+        if args.nav2:
+            wait(lambda: statuses[-1]['phase']=='READY')
         assert statuses[-1]['selected_robot'] == 'go2_0'
         with sync_playwright() as p:
             browser = p.chromium.launch(executable_path=shutil.which('google-chrome'),
@@ -102,20 +119,34 @@ def main():
                     page.mouse.move(*point(x + 30, y), steps=8)
                     page.mouse.up()
                 click_goal(900, 400)
-                wait(lambda: statuses[-1]['phase'] == 'TRACKING' and statuses[-1]['selected_robot'] == 'go2_0')
+                tracking = 'NAVIGATING' if args.nav2 else 'TRACKING'
+                wait(lambda: statuses[-1]['phase'] == tracking and statuses[-1]['selected_robot'] == 'go2_0')
                 wait(lambda: any(max(map(abs, c)) > .01 for c in commands['go2_0']))
-                assert all(max(map(abs, c)) == 0. for c in commands['lekiwi_0'])
+                if not args.nav2:
+                    assert all(max(map(abs, c)) == 0. for c in commands['lekiwi_0'])
                 result['first_selected'] = statuses[-1]['selected_robot']
                 os.write(master, b' ')
-                wait(lambda: statuses[-1]['selected_robot'] == 'lekiwi_0')
+                second = 'go2_0' if args.nav2 else 'lekiwi_0'
+                wait(lambda: statuses[-1]['phase']=='CANCELED' if args.nav2 else statuses[-1]['selected_robot']==second)
+                if args.nav2:
+                    time.sleep(.3)
+                    assert all(max(map(abs,c)) == 0. for c in commands['go2_0'][-5:])
                 click_goal(880, 500)
-                wait(lambda: statuses[-1]['phase'] == 'TRACKING' and statuses[-1]['selected_robot'] == 'lekiwi_0')
-                wait(lambda: any(max(map(abs, c)) > .01 for c in commands['lekiwi_0']))
-                wait(lambda: markers and any('SELECTED: lekiwi_0' in m.text for m in markers[-1].markers))
+                wait(lambda: statuses[-1]['phase']==tracking and statuses[-1]['selected_robot']==second)
+                wait(lambda: any(max(map(abs,c)) > .01 for c in commands[second]))
+                text = 'go2_0 Nav2' if args.nav2 else 'SELECTED: lekiwi_0'
+                wait(lambda: markers and any(text in m.text for m in markers[-1].markers))
                 page.wait_for_timeout(800)
-                assert all(max(map(abs, c)) == 0. for c in commands['go2_0'][-10:])
-                page.screenshot(path=str(output / 'selected_lekiwi.png'))
-                result.update(passed=True, second_selected='lekiwi_0', rviz_restart_required=False,
+                if args.nav2:
+                    wait(lambda: plans and plans[-1].poses)
+                    displays = yaml.safe_load(Path(ready()['config']).read_text())['Visualization Manager']['Displays']
+                    assert any(d['Name']=='Warehouse occupancy map' for d in displays)
+                    assert any(d['Class']=='rviz_default_plugins/Path' for d in displays)
+                    result.update(nav2_map_and_path=True,space_cancels_single_robot=True)
+                else:
+                    assert all(max(map(abs,c)) == 0. for c in commands['go2_0'][-10:])
+                page.screenshot(path=str(output / ('navigation.png' if args.nav2 else 'selected_lekiwi.png')))
+                result.update(passed=True, second_selected=second, rviz_restart_required=False,
                               marker_selection=True, inactive_commands_zero=True)
             finally:
                 browser.close()
