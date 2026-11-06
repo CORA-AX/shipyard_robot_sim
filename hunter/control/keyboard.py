@@ -8,11 +8,12 @@ import time
 import tty
 
 DEFAULT_KEYBOARD_SPEED = 0.5  # m/s
-DEFAULT_KEYBOARD_TURN_SPEED = 0.3  # rad/s, body yaw rate rather than steering angle
+DEFAULT_KEYBOARD_STEERING_ANGLE = 0.3  # rad, virtual front-centre steering angle
 
-HELP = ('HUNTER2_KEYBOARD_READY: W/S forward/back straight; then hold A/D to steer left/right '
-        'while keeping the travel direction; arrows do the same; Space/X stop; Q quit. '
-        'Idle input commands zero. After timeout, press W/S to move again. '
+HELP = ('HUNTER2_KEYBOARD_READY: W/S forward/back straight; A/D steer left/right '
+        'while keeping the travel direction (also works at standstill); arrows do the same; '
+        'Space/X stop and hold steering; C centre steering; Q quit. '
+        'Idle input stops propulsion and holds steering. After timeout, press W/S to move again. '
         'This terminal uses key repeats, not game-style key-up detection.')
 
 
@@ -20,15 +21,16 @@ def add_keyboard_arguments(parser):
     parser.add_argument('--keyboard', action='store_true', help='Control movement from this terminal.')
     parser.add_argument('--speed', '--keyboard-speed', dest='keyboard_speed', type=float, default=DEFAULT_KEYBOARD_SPEED,
                         help='Movement speed in m/s (nonnegative, no upper limit).')
-    parser.add_argument('--turn-speed', '--keyboard-turn-speed', dest='keyboard_turn_speed', type=float, default=DEFAULT_KEYBOARD_TURN_SPEED,
-                        help='Turn speed in rad/s (nonnegative, no upper limit).')
+    parser.add_argument('--keyboard-steering-angle', type=float, default=DEFAULT_KEYBOARD_STEERING_ANGLE,
+                        help='A/D virtual steering angle magnitude in radians (default 0.3).')
     parser.add_argument('--keyboard-timeout', type=float, default=0.6,
                         help='Wall seconds without a movement key before stopping (default 0.6).')
 
 
 def validate_keyboard_arguments(parser, args):
-    if (not all(math.isfinite(v) for v in (args.keyboard_speed, args.keyboard_turn_speed, args.keyboard_timeout))
-            or args.keyboard_speed < 0 or args.keyboard_turn_speed < 0
+    if (not all(math.isfinite(v) for v in (args.keyboard_speed, args.keyboard_steering_angle, args.keyboard_timeout))
+            or args.keyboard_speed < 0 or args.keyboard_steering_angle < 0
+            or args.keyboard_steering_angle >= math.pi / 2
             or args.keyboard_timeout <= 0):
         parser.error('Use finite nonnegative keyboard speeds and a finite positive keyboard timeout.')
     if args.keyboard and not sys.stdin.isatty():
@@ -38,10 +40,10 @@ def validate_keyboard_arguments(parser, args):
 class AckermannKeyboardCommand:
     help = HELP
 
-    def __init__(self, speed=DEFAULT_KEYBOARD_SPEED, turn_speed=DEFAULT_KEYBOARD_TURN_SPEED,
+    def __init__(self, speed=DEFAULT_KEYBOARD_SPEED, steering_angle=DEFAULT_KEYBOARD_STEERING_ANGLE,
                  timeout=0.6, clock=time.monotonic):
-        self.speed, self.turn_speed, self.timeout, self.clock = speed, turn_speed, timeout, clock
-        self.values = (0.0, 0.0, 0.0)
+        self.speed, self.steering_angle, self.timeout, self.clock = speed, steering_angle, timeout, clock
+        self.values = (0.0, 0.0)
         self.received_at = None
         self.events = 0
         self.quit = False
@@ -52,20 +54,18 @@ class AckermannKeyboardCommand:
         return self.received_at is None or self.clock() - self.received_at >= self.timeout
 
     def current(self):
-        return (0.0, 0.0, 0.0) if self.quit or self.stale else self.values
+        return (0.0, self.values[1]) if self.quit or self.stale else self.values
 
     def direction(self, key):
         if key in ('w', 's'):
-            return (self.speed if key == 'w' else -self.speed, 0., 0.)
+            return (self.speed if key == 'w' else -self.speed, 0.)
         if key in ('a', 'd'):
             speed = self.current()[0]
-            if speed == 0.:
-                return (0., 0., 0.)
-            # A/D are steering directions; reversing flips the body yaw sign.
-            yaw = math.copysign(self.turn_speed, speed) * (1. if key == 'a' else -1.)
-            return (speed, 0., yaw)
+            return (speed, self.steering_angle * (1. if key == 'a' else -1.))
+        if key == 'c':
+            return (self.current()[0], 0.)
         if key in (' ', 'x', 'q'):
-            return (0., 0., 0.)
+            return (0., self.values[1])
         return None
 
     def feed(self, text):
@@ -103,7 +103,7 @@ class TerminalKeyboard:
     def __init__(self, args, stream=None):
         self.enabled = args.keyboard
         self.stream = sys.stdin if stream is None else stream
-        self.state = AckermannKeyboardCommand(args.keyboard_speed, args.keyboard_turn_speed, args.keyboard_timeout)
+        self.state = AckermannKeyboardCommand(args.keyboard_speed, args.keyboard_steering_angle, args.keyboard_timeout)
         self.fd = self.saved = None
 
     def __enter__(self):

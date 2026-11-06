@@ -4,7 +4,7 @@ from pathlib import Path
 import sys
 
 if not __package__:
-    sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+    sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from hunter.ros.teleop import main
 

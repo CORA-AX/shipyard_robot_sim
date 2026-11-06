@@ -45,6 +45,7 @@ sys.path.insert(0, sys.argv[1])
 import hunter
 from hunter.control.controller import Hunter2Controller, load_parameters
 from hunter.control.keyboard import AckermannKeyboardCommand
+from hunter.control.commands import DriveCommand
 from hunter.ros.bridge import RobotRosBridge
 from hunter.ros.teleop import main
 from hunter.sim.scene import prepare_hunter2_stage
@@ -55,12 +56,12 @@ assert (root / parameters['usd_path']).is_file()
 assert (root / parameters['usd_path']).resolve().is_relative_to(root)
 keys = AckermannKeyboardCommand(.5, .3)
 keys.feed('wa')
-targets = Hunter2Controller(parameters).update_command(keys.current(), 10.)
+targets = Hunter2Controller(parameters).update_drive(DriveCommand(*keys.current()), 10.)
 assert targets.steering_positions[0] > targets.steering_positions[1] > 0.
 parser = arguments(root)
 args = parser.parse_args(['--ros'])
 validate_arguments(parser, args, parameters)
-assert args.cmd_vel_topic == '/hunter2_0/cmd_vel'
+assert args.ackermann_topic == '/hunter2_0/ackermann_cmd'
 assert args.duration is None
 assert not any(name.split('.')[0] in ('robot_control', 'robot_sim', 'visualization') for name in sys.modules)
 print('Hunter imports and model path are independent of the old workspace.')
@@ -68,8 +69,8 @@ print('Hunter imports and model path are independent of the old workspace.')
             result = subprocess.run([sys.executable, '-I', '-c', script, str(parent)],
                                     cwd=parent, capture_output=True, text=True, timeout=20)
             self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
-            for entry in ('simulate.py', 'teleop.py'):
-                result = subprocess.run([sys.executable, '-I', str(destination / entry), '--help'],
+            for entry in ('simulate.py', 'teleop.py', 'waypoint.py', 'nav2.py', 'export_map.py', 'patrol.py'):
+                result = subprocess.run([sys.executable, '-I', str(destination / 'scripts' / entry), '--help'],
                                         cwd=parent, capture_output=True, text=True, timeout=20)
                 self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
                 self.assertIn('usage:', result.stdout)
@@ -103,7 +104,7 @@ print('Hunter imports and model path are independent of the old workspace.')
                 runtime.main(ROOT)
             self.assertEqual(stopped.exception.code, 0)
             command, cwd, environment = commands[0]
-            self.assertEqual(command[1], str(ROOT / 'simulate.py'))
+            self.assertEqual(command[1], str(ROOT / 'scripts/simulate.py'))
             self.assertEqual(command[2:5], ['--ros', '--config', 'relative/robot.yaml'])
             self.assertEqual(cwd, caller)
             self.assertEqual(environment['PYTHONPATH'], str(ROOT.parent))

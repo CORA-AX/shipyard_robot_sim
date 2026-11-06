@@ -1,0 +1,58 @@
+{
+  "environment": "shipyard",
+  "generator": "hunter/environments/raster.py",
+  "resolution": 0.05,
+  "bounds": [
+    -45.0,
+    -32.0,
+    25.0,
+    28.0
+  ],
+  "support_height_band": [
+    -0.02,
+    0.02
+  ],
+  "support_max_slope_deg": 2.0,
+  "obstacle_height_band": [
+    0.03,
+    0.8
+  ],
+  "colliders": 1036,
+  "cells": {
+    "free": 526844,
+    "occupied": 195101,
+    "unknown": 958055
+  },
+  "image_sha256": "288375ed52ec4af886ee50ae29d75b07fd0d191295a4128027e207ed6144773b",
+  "sources": [
+    {
+      "path": "../assets/environments/shipyard/layout.usda",
+      "sha256": "d7e4363a5b76c5192b4b0998e40ed467bf7f1645f55363a36f7b16eee9d03bbd"
+    },
+    {
+      "path": "../assets/environments/shipyard/models/shipyard.usd",
+      "sha256": "914b3eaf41cde0670355415a8db1046d4ee26d7904aff7f2f0c4ba64cba12dfe"
+    },
+    {
+      "path": "../assets/environments/shipyard/physics.usda",
+      "sha256": "6fd93fa686cc7153994dbc807fa8d2e910f6e558cb6d6f973f480bf948d9d69c"
+    },
+    {
+      "path": "../assets/environments/shipyard/routes.usda",
+      "sha256": "946866cd5b225f3b703f79d407357df7a3dcd55fbe3ca788a77df9a09c423d39"
+    },
+    {
+      "path": "assets/environments/shipyard.usda",
+      "sha256": "2daf4dba8f925f424c8e970e4e68fab4ffcf8ccc24d54e0a9e4bf66b18610bf9"
+    },
+    {
+      "path": "config/environments/shipyard.yaml",
+      "sha256": "05803370d3e9f262e199df6ae642e7ba928991f3015dba76c97bf42afd11a775"
+    },
+    {
+      "path": "environments/raster.py",
+      "sha256": "ca55365fc300f7009d1bc73eed51a655874eb791c95f1b16df536bf370a6a27a"
+    }
+  ],
+  "flat_ground_only": true
+}

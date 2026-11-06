@@ -1,6 +1,7 @@
 """Ackermann targets for front steering and rear drive, using SI units.
 
-Twist vx is longitudinal speed at the rear axle midpoint, wz is yaw rate.
+DriveCommand speed is longitudinal speed at the rear axle midpoint.
+steering_angle is the virtual front-centre wheel angle, positive left.
 This is inverse kinematics and target limiting, not a path-following controller.
 """
 from dataclasses import dataclass
@@ -8,6 +9,7 @@ import math
 from pathlib import Path
 
 import yaml
+from hunter.control.commands import DriveCommand
 
 
 def load_parameters(root, path=None):
@@ -34,8 +36,8 @@ def load_parameters(root, path=None):
             raise ValueError('Hunter max_speed at full steering exceeds rear_velocity_limit.')
     if not isinstance(config.get('usd_path'), str) or not config['usd_path']:
         raise ValueError('Hunter usd_path must identify the saved USD asset.')
-    if not isinstance(config.get('base_link'), str) or not config['base_link']:
-        raise ValueError('Hunter base_link must be a nonempty name.')
+    if not isinstance(config.get('usd_base_link'), str) or not config['usd_base_link']:
+        raise ValueError('Hunter usd_base_link must be a nonempty physical USD link name.')
     names = []
     for group in ('steering', 'rear_wheels'):
         entries = config.get(group)
@@ -86,39 +88,42 @@ class Hunter2Controller:
         self.speed = 0.
         self.inner_angle = 0.
 
-    def update_command(self, command, dt):
-        """Convert (vx, vy, wz) to joint targets; reject lateral motion and spin.
-
-        Desired curvature comes from requested wz/vx rather than dividing by
-        the ramped speed near zero. A stop holds steering while braking.
-        """
-        vx, vy, wz = command
-        if not all(math.isfinite(v) for v in command) or vy != 0. or abs(vx) < 1e-6:
-            return self._advance(0., self.inner_angle, dt)
+    def update_drive(self, command, dt):
+        """Direct speed/steering control, including steering at zero speed."""
+        if not command.valid():
+            return self.stop(dt)
         centre = max(-self.config['max_steering_angle'], min(self.config['max_steering_angle'],
-                     math.atan(self.config['wheelbase'] * (wz / vx))))
+                     command.steering_angle))
         curvature = math.tan(centre) / self.config['wheelbase']
         inner = math.atan(self.config['wheelbase'] * curvature /
                           (1. - self.config['front_track'] * abs(curvature) / 2.))
-        return self._advance(vx, inner, dt)
+        return self._advance(command.speed, inner, dt,
+                             acceleration=command.acceleration,
+                             steering_rate=command.steering_angle_velocity)
+
+    def stop(self, dt):
+        """Deadman/invalid input: brake with configured limits and hold steering."""
+        return self._advance(0., self.inner_angle, dt)
 
     def update(self, requested_speed, dt):
         """Compatibility entry for CLI straight driving."""
         if not math.isfinite(requested_speed) or not math.isfinite(dt) or dt <= 0:
             raise ValueError('Hunter speed must be finite and dt must be finite and positive.')
-        return self._advance(requested_speed, 0., dt)
+        return self.update_drive(DriveCommand(requested_speed), dt)
 
-    def _advance(self, requested_speed, inner_angle, dt):
+    def _advance(self, requested_speed, inner_angle, dt, *, acceleration=0., steering_rate=0.):
         if not math.isfinite(dt) or dt <= 0:
             raise ValueError('Hunter dt must be finite and positive.')
         maximum = self.config['max_speed']
         requested_speed = max(-maximum, min(maximum, requested_speed))
-        change = self.config['max_acceleration'] * dt
+        acceleration = min(self.config['max_acceleration'], acceleration) if acceleration > 0. else self.config['max_acceleration']
+        change = acceleration * dt
         self.speed += max(-change, min(change, requested_speed - self.speed))
         # Slew the signed inner-wheel angle. The outer angle is a monotonic,
         # shallower function of this angle, so both joints respect the rate
         # limit while sharing exactly the same instantaneous turning centre.
-        change = self.config['max_steering_rate'] * dt
+        steering_rate = min(self.config['max_steering_rate'], steering_rate) if steering_rate > 0. else self.config['max_steering_rate']
+        change = steering_rate * dt
         self.inner_angle += max(-change, min(change, inner_angle - self.inner_angle))
         tangent = math.tan(self.inner_angle)
         length, front_half = self.config['wheelbase'], self.config['front_track'] / 2.

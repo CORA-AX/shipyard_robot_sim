@@ -1,1 +1,1 @@
-"""Hunter-specific development modules."""
+"""Hunter Ackermann targets, validated commands and terminal input."""

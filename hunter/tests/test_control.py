@@ -11,6 +11,7 @@ import yaml
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT.parent))
 from hunter.control.controller import Hunter2Controller, load_parameters
+from hunter.control.commands import DriveCommand
 
 
 class HunterControlTests(unittest.TestCase):
@@ -77,7 +78,7 @@ class HunterControlTests(unittest.TestCase):
         radius = self.parameters['wheel_radius']
         for speed, yaw in ((.5, .2), (.5, -.2), (-.5, .2), (-.5, -.2)):
             self.controller.reset()
-            target = self.controller.update_command((speed, 0., yaw), 10.)
+            target = self.controller.update_drive(DriveCommand(speed, math.atan(length*yaw/speed)), 10.)
             self.assertAlmostEqual(target.yaw_rate, yaw)
             rear_left, rear_right = [v * radius for v in target.rear_velocities]
             self.assertAlmostEqual((rear_left + rear_right) / 2., speed)
@@ -90,9 +91,9 @@ class HunterControlTests(unittest.TestCase):
 
     def test_steering_and_speed_limits_hold_during_alternating_turns_and_reversals(self):
         previous_speed, previous_angles = 0., (0., 0.)
-        for command in ([(1., 0., 20.)] * 120 + [(-1., 0., 20.)] * 220
-                        + [(1., 0., -20.)] * 220 + [(0., 0., 0.)] * 120):
-            target = self.controller.update_command(command, .02)
+        for command in ([(1., 20.)] * 120 + [(-1., 20.)] * 220
+                        + [(1., -20.)] * 220 + [(0., 0.)] * 120):
+            target = self.controller.update_drive(DriveCommand(*command), .02)
             self.assertLessEqual(abs(target.speed - previous_speed), self.parameters['max_acceleration'] * .02 + 1e-12)
             self.assertLessEqual(abs(target.steering_angle), self.parameters['max_steering_angle'] + 1e-12)
             for before, angle in zip(previous_angles, target.steering_positions):
@@ -105,19 +106,19 @@ class HunterControlTests(unittest.TestCase):
         self.assertEqual(target.yaw_rate, 0.)
 
     def test_stop_holds_steering_until_stopped_and_new_straight_command_centres_it(self):
-        turning = self.controller.update_command((.5, 0., .2), 10.)
-        stopped = self.controller.update_command((0., 0., 0.), 10.)
+        turning = self.controller.update_drive(DriveCommand(.5, .2), 10.)
+        stopped = self.controller.stop(10.)
         self.assertEqual(stopped.steering_positions, turning.steering_positions)
         self.assertEqual(stopped.rear_velocities, (0., 0.))
-        straight = self.controller.update_command((.5, 0., 0.), 10.)
+        straight = self.controller.update_drive(DriveCommand(.5, 0.), 10.)
         self.assertEqual(straight.steering_positions, (0., 0.))
 
     def test_joint_signs_apply_to_both_steering_and_rear_drive(self):
-        reference = self.controller.update_command((.5, 0., .2), 10.)
+        reference = self.controller.update_drive(DriveCommand(.5, .2), 10.)
         parameters = copy.deepcopy(self.parameters)
         parameters['steering'][0]['sign'] = -1
         parameters['rear_wheels'][1]['sign'] = -1
-        target = Hunter2Controller(parameters).update_command((.5, 0., .2), 10.)
+        target = Hunter2Controller(parameters).update_drive(DriveCommand(.5, .2), 10.)
         self.assertEqual(target.steering_positions, (-reference.steering_positions[0], reference.steering_positions[1]))
         self.assertEqual(target.rear_velocities, (reference.rear_velocities[0], -reference.rear_velocities[1]))
 

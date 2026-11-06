@@ -1,0 +1,13 @@
+# Single goal, empty flat ground, forward-only. Metres, radians, seconds.
+cruise_speed: 0.4
+lookahead: 0.55
+turning_radius_factor: 1.35
+approach_distance: 0.8
+position_tolerance: 0.12
+yaw_tolerance: 0.12
+stopped_speed: 0.03
+stopped_yaw_rate: 0.05
+arrival_hold_time: 0.3
+deceleration: 0.3
+max_lateral_acceleration: 0.35
+max_tracking_error: 1.0

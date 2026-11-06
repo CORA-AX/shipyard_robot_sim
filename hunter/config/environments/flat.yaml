@@ -1,0 +1,10 @@
+usd_path: null
+position: [0.0, 0.0, 0.37]
+yaw: 0.0
+camera_eye: [2.8, 2.8, 1.8]
+camera_target: [0.0, 0.0, 0.2]
+map_file: null
+bounds: [-20.0, -20.0, 20.0, 20.0]
+resolution: 0.05
+view_center: [1.0, 0.0]
+view_scale: 70.0

@@ -1,0 +1,16 @@
+# Map XY at the rear axle midpoint, metres. Position goals leave heading free.
+# Junctions match the common shipyard route, but Hunter owns this configuration.
+frame: map
+start: [-15.71991, 18.00001]
+start_tolerance_m: 0.4
+routes:
+  smoke:
+    - {name: north_road, xy: [-22.0, 18.0]}
+    - {name: parking, xy: [-15.71991, 18.00001]}
+  flat_only:
+    - {name: north_junction, xy: [-25.0, 18.0]}
+    - {name: bypass_access, xy: [-25.0, -1.0]}
+    - {name: south_junction, xy: [-25.0, -20.0]}
+    - {name: bypass_return, xy: [-25.0, -1.0]}
+    - {name: north_return, xy: [-25.0, 18.0]}
+    - {name: parking, xy: [-15.71991, 18.00001]}

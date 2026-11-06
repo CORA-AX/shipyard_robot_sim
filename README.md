@@ -8,7 +8,7 @@ Isaac Sim 5.0 + Isaac Lab v2.2.1 기반 로봇 시뮬레이션 프로젝트다.
 현재 Go2 정책 제어, Lekiwi 이동 베이스 제어 및 ROS workspace의 공통 warehouse에서
 Go2+Lekiwi 동시 제어와 단일 선택 PD waypoint 추종을 지원한다.
 Go2 한 대의 Nav2 warehouse 경로 계획·추종은 [ROS workspace 실행 안내](ros2_ws/README.md#go2-nav2-navigation)를 따른다.
-Hunter2의 독립 Ackermann 제어와 ROS 키보드 주행은 [hunter 실행 안내](hunter/README.md)를 따른다.
+Hunter2의 Ackermann 제어·RViz Nav2 목표 주행·저장 경로 왕복은 [hunter 실행 안내](hunter/README.md)를 따른다.
 다중 로봇 navigation·상위 플래너는 후속 단계다.
 
 기본 분리 실행에서는 **viewer가 환경·로봇·물리를 관리하고, 별도 control 프로세스가 정책을 실행한다.**
@@ -469,6 +469,7 @@ ROS workspace의 로봇별 속도 제어기·공통 실행부·PD waypoint follo
 Space로 한 로봇씩 선택하며 경로 계획·장애물 회피·상위 플래너는 후속 단계다.
 Go2는 `scripts/viewer.py --robot go2`로 생성하고 `scripts/go2/control.py`로 제어한다.
 
-**HUNTER 상태: Ackermann 제어·ROS teleop 구현 및 CPU 검사 완료.**
-`hunter/`로 분리한 GUI의 모델 로딩을 확인했으며, 새 경로의 전후진·조향 확인은
-[Hunter 실행 안내](hunter/README.md)를 따른다. 경로 계획·장애물 회피는 후속 단계다.
+**HUNTER 상태: Ackermann 제어·ROS teleop·자체 Dubins/Pure Pursuit·Nav2 주행 구현.**
+RViz 단일 목표와 조선소 저장 경로 왕복, 시뮬레이션 시간 cost 기록을 지원한다.
+실행 파일은 `hunter/scripts/`에 모았으며 [Hunter 실행 안내](hunter/docs/usage.md)를 따른다.
+CPU·실제 ROS/Nav2 + CPU 차량 모델 검사를 통과했다. 시간 최소화와 센서 기반 동적 장애물 회피는 후속 단계다.

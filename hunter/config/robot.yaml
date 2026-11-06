@@ -3,7 +3,9 @@
 # limit below is a runtime override in rad/s; the source USD is never rewritten.
 # Relative to hunter/, independent of the process working directory.
 usd_path: assets/hunter2_sim/hunter2_sim.usd
-base_link: base_link
+# Physical USD rigid-body name. ROS base_link is defined at the rear axle;
+# the original physical frame is published as ROS chassis_link.
+usd_base_link: base_link
 # Rolling radius of both saved rear wheel_collider cylinders (front: 0.164158 m).
 wheel_radius: 0.164275
 # Measured from the saved USD joint anchors (not the nominal hardware track).

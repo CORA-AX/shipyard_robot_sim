@@ -1,1 +1,1 @@
-"""Hunter-specific development modules."""
+"""Hunter USD loading, isolated Isaac startup and the physics loop."""

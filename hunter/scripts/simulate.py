@@ -3,7 +3,7 @@
 from pathlib import Path
 import sys
 
-HUNTER_ROOT = Path(__file__).resolve().parent
+HUNTER_ROOT = Path(__file__).resolve().parents[1]
 if not __package__:
     sys.path.insert(0, str(HUNTER_ROOT.parent))
 

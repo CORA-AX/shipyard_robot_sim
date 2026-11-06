@@ -1,0 +1,15 @@
+#usda 1.0
+(
+    defaultPrim = "World"
+    metersPerUnit = 1
+    upAxis = "Z"
+    subLayers = [
+        @../../../assets/environments/shipyard/routes.usda@,
+        @../../../assets/environments/shipyard/layout.usda@,
+        @../../../assets/environments/shipyard/physics.usda@
+    ]
+)
+
+# Compose the same three local physical/visual layers, without editing them.
+# The remote warehouse reference and preview Render metadata authored separately
+# in world.usda are outside this Hunter experiment and are not composed.

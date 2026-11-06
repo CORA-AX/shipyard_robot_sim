@@ -56,6 +56,12 @@ class HunterSceneTests(unittest.TestCase):
             passive = UsdPhysics.DriveAPI(self.stage.GetPrimAtPath(self.path + '/joints/' + name), 'angular')
             self.assertEqual(passive.GetMaxForceAttr().Get(), 0.)
 
+    def test_rear_axle_reference_is_measured_in_base_axes_independent_of_spawn(self):
+        for position, yaw in (((0., 0., .37), 0.), ((3., -2., .6), 1.2)):
+            details = prepare_hunter2_stage(self.stage, self.path, self.parameters, position, yaw)
+            for actual, expected in zip(details['rear_axle_offset_base_m'], (-.28009, -.00001, -.19558)):
+                self.assertAlmostEqual(actual, expected, places=5)
+
     def test_saved_wheel_cylinders_replace_mesh_collisions_and_match_control_radius(self):
         prepare_hunter2_stage(self.stage, self.path, self.parameters, (0., 0., .37), 0.)
         rear_names = [entry['joint'] for entry in self.parameters['rear_wheels']]

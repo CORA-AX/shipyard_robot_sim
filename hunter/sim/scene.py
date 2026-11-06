@@ -20,7 +20,7 @@ def prepare_hunter2_stage(stage, prim_path, parameters, position, yaw):
     errors = [str(error) for p in Usd.PrimRange(root) for error in p.GetPrimIndex().localErrors]
     if errors:
         raise ValueError(f'Hunter USD composition errors: {errors}')
-    base = stage.GetPrimAtPath(prim_path + '/' + parameters['base_link'])
+    base = stage.GetPrimAtPath(prim_path + '/' + parameters['usd_base_link'])
     if not base or not base.HasAPI(UsdPhysics.RigidBodyAPI):
         raise ValueError('Hunter requires its configured base rigid body.')
     articulation_roots = [p for p in Usd.PrimRange(root) if p.HasAPI(UsdPhysics.ArticulationRootAPI)]
@@ -128,6 +128,7 @@ def prepare_hunter2_stage(stage, prim_path, parameters, position, yaw):
         drive.CreateMaxForceAttr(0.)
         drive.CreateTargetVelocityAttr(0.)
     return dict(saved_drives=details, geometry_m=geometry,
+                rear_axle_offset_base_m=[sum(p[i] for p in rear) / 2. for i in range(3)],
                 minimum_turning_radius_m=parameters['wheelbase'] / math.tan(parameters['max_steering_angle']),
                 source_root_pose_replaced=True,
                 passive_front_wheels=list(parameters['passive_front_wheels']))

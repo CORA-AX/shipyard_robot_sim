@@ -18,7 +18,7 @@ HELP = ('GO2_KEYBOARD_READY: W/S forward/back; A/D left/right; Z/C turn left/rig
 def add_keyboard_arguments(parser):
     parser.add_argument('--keyboard', action='store_true', help='Control movement from this terminal.')
     parser.add_argument('--keyboard-layout', choices=('holonomic',), default='holonomic',
-                        help='Go2/Lekiwi keyboard layout; use hunter/teleop.py for Hunter.')
+                        help='Go2/Lekiwi keyboard layout; use hunter/scripts/teleop.py for Hunter.')
     parser.add_argument('--keyboard-speed', type=float, default=DEFAULT_KEYBOARD_SPEED,
                         help='Movement speed in m/s (nonnegative, no upper limit).')
     parser.add_argument('--keyboard-turn-speed', type=float, default=DEFAULT_KEYBOARD_TURN_SPEED,

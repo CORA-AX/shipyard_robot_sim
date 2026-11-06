@@ -1,0 +1,11 @@
+# Same physical shipyard, separate Hunter spawn and flat-ground navigation map.
+usd_path: assets/environments/shipyard.usda
+position: [-16.0, 18.0, 0.37]
+yaw: 3.141592653589793
+camera_eye: [-8.0, 28.0, 12.0]
+camera_target: [-20.0, 12.0, 0.2]
+map_file: maps/shipyard.yaml
+bounds: [-45.0, -32.0, 25.0, 28.0]
+resolution: 0.05
+view_center: [-18.0, 0.0]
+view_scale: 12.0
